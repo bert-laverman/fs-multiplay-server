@@ -16,10 +16,71 @@
  */
 package nl.rakis.fs;
 
-public class UserInfo {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Created by bertl on 12/18/2016.
+ */
+public class UserInfo
+    implements FSData
+{
     private String id;
-    private AircraftInfo aircraftInfo;
-    private Location location;
+    private String username;
+    private String password;
+    private String session;
+
+    public UserInfo() {
+    }
+
+    public UserInfo(String username, String password) {
+        this.id = UUID.randomUUID().toString();
+        this.username = username;
+        this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserInfo)) return false;
+
+        UserInfo userInfo = (UserInfo) o;
+
+        if (getId() != null ? !getId().equals(userInfo.getId()) : userInfo.getId() != null) return false;
+        if (getUsername() != null ? !getUsername().equals(userInfo.getUsername()) : userInfo.getUsername() != null)
+            return false;
+        if (getPassword() != null ? !getPassword().equals(userInfo.getPassword()) : userInfo.getPassword() != null)
+            return false;
+        return getSession() != null ? getSession().equals(userInfo.getSession()) : userInfo.getSession() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
+        result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
+        result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String getType() {
+        return "User";
+    }
+
+    @Override
+    public Map<String, String> asMap() {
+        HashMap<String,String> result = new HashMap<>();
+
+        result.put("id", id);
+        result.put("type", "User");
+        result.put("username", (username == null) ? "" : username);
+        result.put("password", (password == null) ? "" : password);
+        result.put("sesion", (session == null) ? "" : session);
+
+        return result;
+    }
 
     public String getId() {
         return id;
@@ -29,19 +90,27 @@ public class UserInfo {
         this.id = id;
     }
 
-    public AircraftInfo getAircraftInfo() {
-        return aircraftInfo;
+    public String getUsername() {
+        return username;
     }
 
-    public void setAircraftInfo(AircraftInfo aircraftInfo) {
-        this.aircraftInfo = aircraftInfo;
+    public void setUsername(String userName) {
+        this.username = userName;
     }
 
-    public Location getLocation() {
-        return location;
+    public String getPassword() {
+        return password;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 }

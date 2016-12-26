@@ -19,6 +19,7 @@ package nl.rakis.fs;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by bertl on 12/18/2016.
@@ -29,23 +30,16 @@ public class SessionInfo
     private String id;
     private String name;
     private String description;
-    private List<UserInfo> users;
+    private List<UserData> users;
 
     public SessionInfo() {
 
     }
 
-    public SessionInfo(String id, String name, String description) {
-        this.id = id;
+    public SessionInfo(String name, String description) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.description = description;
-    }
-
-    public SessionInfo(String id, String name, String description, List<UserInfo> users) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.users = users;
     }
 
     @Override
@@ -73,11 +67,29 @@ public class SessionInfo
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        return new SessionInfo(id, name, description, users);
+        SessionInfo newSession = new SessionInfo();
+
+        newSession.setId(getId());
+        newSession.setName(getName());
+        newSession.setDescription(getDescription());
+        newSession.setUsers(getUsers());
+
+        return newSession;
     }
 
     public SessionInfo cleanClone() {
-        return new SessionInfo(id, name, description);
+        SessionInfo newSession = new SessionInfo();
+
+        newSession.setId(getId());
+        newSession.setName(getName());
+        newSession.setDescription(getDescription());
+
+        return newSession;
+    }
+
+    @Override
+    public String getType() {
+        return "Session";
     }
 
     @Override
@@ -85,6 +97,7 @@ public class SessionInfo
         HashMap<String,String> result = new HashMap<>();
 
         result.put("id", id);
+        result.put("type", getType());
         result.put("name", (name == null) ? "" : name);
         result.put("description", (description == null) ? "" : description);
 
@@ -119,4 +132,11 @@ public class SessionInfo
         return users.size();
     }
 
+    public List<UserData> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<UserData> users) {
+        this.users = users;
+    }
 }

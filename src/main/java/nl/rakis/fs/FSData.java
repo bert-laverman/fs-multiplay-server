@@ -22,5 +22,6 @@ import java.util.Map;
  * Created by bertl on 12/25/2016.
  */
 public interface FSData {
+    public String getType();
     public Map<String,String> asMap();
 }

@@ -23,18 +23,16 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.AuthenticationInfo;
 import nl.rakis.fs.UserInfo;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.PBEKeySpec;
 import javax.ws.rs.NotAuthorizedException;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 import static javax.crypto.Cipher.DECRYPT_MODE;
@@ -117,7 +115,7 @@ public class EncryptDecrypt {
         return process(s, DECRYPT_MODE, getPublicKey());
     }
 
-    public static String newToken(AuthenticationInfo authInfo) {
+    public static String newToken(UserInfo authInfo) {
         return JWT.create()
                 .withIssuer(ISSUER)
                 .withClaim(CLAIM_USERNAME, authInfo.getUsername())
