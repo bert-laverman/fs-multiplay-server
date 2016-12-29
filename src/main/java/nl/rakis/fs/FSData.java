@@ -16,12 +16,29 @@
  */
 package nl.rakis.fs;
 
+import javax.json.JsonObject;
 import java.util.Map;
 
 /**
- * Created by bertl on 12/25/2016.
+ * Standard stuff everyone should have
  */
 public interface FSData {
-    public String getType();
-    public Map<String,String> asMap();
+
+    /**
+     * What is the unique key for this object.
+     * @return a unique key.
+     */
+    String getKey();
+
+    /**
+     * Convert this object to a Map
+     * @return a HashMap of all fields
+     */
+    Map<String,String> toMap();
+
+    /**
+     * Convert this object to a JsonObject
+     * @return A JsonObject of all fields
+     */
+    JsonObject toJsonObject();
 }

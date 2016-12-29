@@ -16,17 +16,26 @@
  */
 package nl.rakis.fs;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Created by bertl on 12/18/2016.
+ * A user
  */
 public class UserInfo
     implements FSData
 {
-    private String id;
+    public static final String FIELD_USERNAME = "username";
+    public static final String FIELD_PASSWORD = "password";
+    public static final String FIELD_SESSION = "session";
+    public static final String FIELD_TYPE = "type";
+    public static final String USER_TYPE = "User";
+    public static final String ADMIN_USER = "admin";
     private String username;
     private String password;
     private String session;
@@ -35,9 +44,14 @@ public class UserInfo
     }
 
     public UserInfo(String username, String password) {
-        this.id = UUID.randomUUID().toString();
         this.username = username;
         this.password = password;
+    }
+
+    public UserInfo(String username, String password, String session) {
+        this.username = username;
+        this.password = password;
+        this.session = session;
     }
 
     @Override
@@ -47,7 +61,6 @@ public class UserInfo
 
         UserInfo userInfo = (UserInfo) o;
 
-        if (getId() != null ? !getId().equals(userInfo.getId()) : userInfo.getId() != null) return false;
         if (getUsername() != null ? !getUsername().equals(userInfo.getUsername()) : userInfo.getUsername() != null)
             return false;
         if (getPassword() != null ? !getPassword().equals(userInfo.getPassword()) : userInfo.getPassword() != null)
@@ -57,37 +70,69 @@ public class UserInfo
 
     @Override
     public int hashCode() {
-        int result = getId() != null ? getId().hashCode() : 0;
-        result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
+        int result = getUsername() != null ? getUsername().hashCode() : 0;
         result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
         result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
         return result;
     }
 
-    @Override
-    public String getType() {
-        return "User";
+    public static String getType() {
+        return USER_TYPE;
     }
 
     @Override
-    public Map<String, String> asMap() {
-        HashMap<String,String> result = new HashMap<>();
+    public String getKey() {
+        return getType()+":"+getUsername();
+    }
 
-        result.put("id", id);
-        result.put("type", "User");
-        result.put("username", (username == null) ? "" : username);
-        result.put("password", (password == null) ? "" : password);
-        result.put("sesion", (session == null) ? "" : session);
+    @Override
+    public Map<String, String> toMap() {
+        Map<String,String> result = new HashMap<>();
+
+        result.put(FIELD_TYPE, getType());
+        result.put(FIELD_USERNAME, (username == null) ? "" : username);
+        result.put(FIELD_PASSWORD, (password == null) ? "" : password);
+        result.put(FIELD_SESSION, (session == null) ? "" : session);
 
         return result;
     }
 
-    public String getId() {
-        return id;
+    @Override
+    public JsonObject toJsonObject() {
+        return Json.createObjectBuilder()
+                .add(FIELD_TYPE, getType())
+                .add(FIELD_USERNAME, getUsername())
+                .add(FIELD_PASSWORD, getPassword())
+                .add(FIELD_SESSION, getSession())
+                .build();
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @Override
+    public String toString() {
+        return toJsonObject().toString();
+    }
+
+    public static UserInfo fromJsonObject(JsonObject obj) {
+        UserInfo result = null;
+
+        if (obj != null) {
+            result = new UserInfo(obj.getString(UserInfo.FIELD_USERNAME), obj.getString(UserInfo.FIELD_PASSWORD));
+            result.setSession(obj.getString(UserInfo.FIELD_SESSION, null));
+        }
+
+        return result;
+    }
+
+    public static UserInfo fromString(String json) {
+        UserInfo result = null;
+
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                result = fromJsonObject(jr.readObject());
+            }
+        }
+        return result;
     }
 
     public String getUsername() {

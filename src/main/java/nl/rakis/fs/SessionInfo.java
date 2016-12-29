@@ -16,28 +16,35 @@
  */
 package nl.rakis.fs;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
- * Created by bertl on 12/18/2016.
+ * Multiplayer session
  */
 public class SessionInfo
     implements FSData
 {
-    private String id;
+    public static final String FIELD_TYPE = "type";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_DESCRIPTION = "description";
+    public static final String SESSION_TYPE = "Session";
+    public static final String ADMIN_SESSION = "Admin Session";
+    public static final String DUMMY_SESSION = "Dummy Session";
     private String name;
     private String description;
-    private List<UserData> users;
+    private transient List<UserData> users;
 
     public SessionInfo() {
 
     }
 
     public SessionInfo(String name, String description) {
-        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.description = description;
     }
@@ -49,7 +56,6 @@ public class SessionInfo
 
         SessionInfo that = (SessionInfo) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         return users != null ? users.equals(that.users) : that.users == null;
@@ -58,8 +64,7 @@ public class SessionInfo
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (users != null ? users.hashCode() : 0);
         return result;
@@ -69,7 +74,6 @@ public class SessionInfo
     protected Object clone() throws CloneNotSupportedException {
         SessionInfo newSession = new SessionInfo();
 
-        newSession.setId(getId());
         newSession.setName(getName());
         newSession.setDescription(getDescription());
         newSession.setUsers(getUsers());
@@ -80,36 +84,66 @@ public class SessionInfo
     public SessionInfo cleanClone() {
         SessionInfo newSession = new SessionInfo();
 
-        newSession.setId(getId());
         newSession.setName(getName());
         newSession.setDescription(getDescription());
 
         return newSession;
     }
 
-    @Override
-    public String getType() {
-        return "Session";
+    public static String getType() {
+        return SESSION_TYPE;
     }
 
     @Override
-    public Map<String, String> asMap() {
+    public String getKey() {
+        return getType()+":"+getName();
+    }
+
+    @Override
+    public Map<String, String> toMap() {
         HashMap<String,String> result = new HashMap<>();
 
-        result.put("id", id);
-        result.put("type", getType());
-        result.put("name", (name == null) ? "" : name);
-        result.put("description", (description == null) ? "" : description);
+        result.put(FIELD_TYPE, getType());
+        result.put(FIELD_NAME, name);
+        result.put(FIELD_DESCRIPTION, (description == null) ? "" : description);
 
         return result;
     }
 
-    public String getId() {
-        return id;
+    @Override
+    public JsonObject toJsonObject() {
+        return Json.createObjectBuilder()
+                .add(FIELD_TYPE, getType())
+                .add(FIELD_NAME, getName())
+                .add(FIELD_DESCRIPTION, (description == null) ? "" : description)
+                .build();
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @Override
+    public String toString() {
+        return toJsonObject().toString();
+    }
+
+    public static SessionInfo fromJsonObject(JsonObject obj) {
+        SessionInfo result = null;
+
+        if (obj != null) {
+            result = new SessionInfo(obj.getString(FIELD_NAME), obj.getString(FIELD_DESCRIPTION));
+        }
+
+        return result;
+    }
+
+    public static SessionInfo fromString(String json) {
+        SessionInfo result = null;
+
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                result = fromJsonObject(jr.readObject());
+            }
+        }
+        return result;
     }
 
     public String getName() {

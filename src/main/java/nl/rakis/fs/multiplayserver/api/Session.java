@@ -20,136 +20,134 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.UserInfo;
 import nl.rakis.fs.NamedObject;
 import nl.rakis.fs.SessionInfo;
+import nl.rakis.fs.db.Sessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
 import javax.cache.annotation.CacheResult;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+@Stateless
 @Path("session")
 public class Session {
 
+    @Inject
+    private Sessions sessions;
+
     @CacheResult
-    private SessionInfo findSessionByName(String name)
+    private SessionInfo findSession(String name)
     {
-        SessionInfo result = null;
-
-        for (SessionInfo session : allSessions.values()) {
-            if (session.getName().equalsIgnoreCase(name)) {
-                result = session;
-                break;
-            }
-        }
-        return result;
+        return sessions.getSession(name);
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<SessionInfo> allSessions(@HeaderParam("authorization")String authHeader)
+    public Collection<SessionInfo> getAll(@HeaderParam("authorization")String authHeader)
     {
-        System.err.println("GET all sessions");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
 
-        return allSessions.values().stream()
-                .map(session -> session.cleanClone())
-                .collect(Collectors.toList());
+        return sessions.getAllSessions();
     }
 
     @GET
-    @Path("{id}")
+    @Path("{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public SessionInfo session(@PathParam("id") String id, @HeaderParam("authorization")String authHeader)
+    public SessionInfo get(@NotNull @PathParam("name") String name,
+                           @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
-        String mySession = EncryptDecrypt.getSession(token);
 
-        SessionInfo result;
-
-        if (!mySession.equals(id)) {
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER) &&
+                !EncryptDecrypt.getSession(token).equals(name))
+        {
             throw new NotAuthorizedException(("Not your session"));
         }
-        else {
-            if (!allSessions.containsKey(id)) {
-                throw new NotFoundException("Unknown session");
-            } else {
-                result = allSessions.get(id);
-            }
-        }
-        return result;
-    }
 
-    @POST
-    @Path("{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public SessionInfo newSession(NamedObject newSession, @HeaderParam("authorization")String authHeader)
-    {
-        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
-        EncryptDecrypt.verifyToken(token);
-
-        if (findSessionByName(newSession.getName()) != null) {
-            throw new ForbiddenException("Session with that name already exists");
-        }
-        SessionInfo session = new SessionInfo();
-        session.setId(UUID.randomUUID().toString());
-        session.setName(newSession.getName());
-        session.setDescription(newSession.getDescription());
-
-        allSessions.put(session.getId(), session);
-
-        return session;
+        return findSession(name);
     }
 
     @PUT
-    @Path("{id}")
+    @Path("{name}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public SessionInfo changeDetails(@NotNull @PathParam("id") String id, SessionInfo session, @HeaderParam("authorization")String authHeader)
+    public SessionInfo put(@NotNull @PathParam("name") String name,
+                           SessionInfo session,
+                           @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
 
-        if (!allSessions.containsKey(id)) {
-            throw new NotFoundException();
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+            throw new NotAuthorizedException("Only admin users can change session details");
         }
-        if (!id.equals(session.getId())) {
-            throw new BadRequestException("Session id mismatch");
+        SessionInfo result = findSession(name);
+
+        if (result == null) {
+            throw new NotFoundException("No such session");
         }
-        SessionInfo result = allSessions.get(session.getId());
 
         result.setDescription(session.getDescription());
         if (!result.getName().equalsIgnoreCase(session.getName())) {
             // Be careful changing the name
-            if (findSessionByName(session.getName()) != null) {
+            if (findSession(session.getName()) != null) {
                 throw new ForbiddenException("Session with that name already exists");
             }
             result.setName(session.getName());
         }
+        sessions.setSession(result);
+
+        return result;
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public SessionInfo newSession(NamedObject session,
+                                  @HeaderParam("authorization") String authHeader)
+    {
+        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+        EncryptDecrypt.verifyToken(token);
+
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+            throw new NotAuthorizedException("Only admin users can create sessions");
+        }
+
+        if (findSession(session.getName()) != null) {
+            throw new ForbiddenException("Session with that name already exists");
+        }
+
+        SessionInfo result = new SessionInfo(session.getName(), session.getDescription());
+
+        sessions.setSession(result);
 
         return result;
     }
 
     @DELETE
-    @Path("{id}")
-    public void removeSession(@NotNull @PathParam("id") String id, @HeaderParam("authorization")String authHeader)
+    @Path("{name}")
+    public void removeSession(@NotNull @PathParam("name") String name,
+                              @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
 
-        if (EncryptDecrypt.getSession(token).equals(id)) {
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+            throw new NotAuthorizedException("Only admin users can create sessions");
+        }
+
+        if (EncryptDecrypt.getSession(token).equals(name)) {
             throw new ForbiddenException("Cannot remove the session you're in");
         }
-        if (!allSessions.containsKey(id)) {
-            throw new NotFoundException();
+        if (findSession(name) == null) {
+            throw new NotFoundException("No such session found");
         }
-        allSessions.remove(id);
+        sessions.delete(name);
     }
 
     @PUT
@@ -167,11 +165,11 @@ public class Session {
         if (authInfo.getSession() == null) {
             throw new BadRequestException("No session");
         }
-        SessionInfo session = findSessionByName(authInfo.getSession());
+        SessionInfo session = findSession(authInfo.getSession());
         if (session == null) {
             throw new NotFoundException("Session not found");
         }
-        authInfo.setSession(session.getId());
+        authInfo.setSession(session.getName());
         return EncryptDecrypt.newToken(authInfo);
     }
 

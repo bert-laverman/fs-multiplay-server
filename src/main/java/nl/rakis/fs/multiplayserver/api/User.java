@@ -16,74 +16,125 @@
  */
 package nl.rakis.fs.multiplayserver.api;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.AircraftStatus;
-import nl.rakis.fs.UserData;
+import nl.rakis.fs.UserInfo;
+import nl.rakis.fs.UserInfo;
+import nl.rakis.fs.db.Users;
+import nl.rakis.fs.security.EncryptDecrypt;
+import nl.rakis.fs.security.PasswordStorage;
 
+import javax.cache.annotation.CacheResult;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Stateless
 @Path("user")
 public class User {
 
-    private static Map<String, UserData> allAircraft = new HashMap<>();
+    @Inject
+    private Users users;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<UserData> where()
-    {
-        return allAircraft.values();
+    @CacheResult
+    private UserInfo findUser(String username) {
+        return users.getUser(username);
     }
 
     @GET
-    @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public UserData where(@PathParam("id") String id) throws WebApplicationException
+    public Collection<UserInfo> getAll(@HeaderParam("authorization")String authHeader)
     {
-        UserData result;
+        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+        EncryptDecrypt.verifyToken(token);
 
-        if (!allAircraft.containsKey(id)) {
-            throw new NotFoundException("Unknown aircraft");
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+            throw new NotAuthorizedException("Only admin users can query users");
         }
-        else {
-            result = allAircraft.get(id);
+        return users.getAllUsersScrubbed();
+    }
+
+    @GET
+    @Path("{username}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public UserInfo get(@PathParam("username") String username, @HeaderParam("authorization")String authHeader)
+            throws WebApplicationException
+    {
+        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+        EncryptDecrypt.verifyToken(token);
+
+        UserInfo result = findUser(username);
+        if (result == null) {
+            throw new NotFoundException("No such user");
         }
-        return result;
+        return Users.scrubUser(result);
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftStatus here(UserData userData) throws WebApplicationException
+    public UserInfo put(UserInfo user, @HeaderParam("authorization")String authHeader)
+            throws WebApplicationException
     {
-        AircraftStatus result;
+        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+        EncryptDecrypt.verifyToken(token);
 
-        if (!allAircraft.containsKey(userData.getId())) {
-            throw new NotFoundException("Unknown userData");
+        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(user.getUsername())) {
+            throw new NotAuthorizedException("You can only update yourself");
         }
-        else {
-            allAircraft.put(userData.getId(), userData);
-            result = new AircraftStatus(userData.getId(), "Ok");
+        UserInfo result = findUser(user.getUsername());
+        if (result == null) {
+            throw new NotFoundException("You don't exist. Go away!");
         }
+        if ((user.getPassword() != null) && !user.getPassword().equals("")) {
+            try {
+                result.setPassword(PasswordStorage.createHash(user.getPassword()));
+            } catch (PasswordStorage.CannotPerformOperationException e) {
+                throw new InternalServerErrorException("Yikes, I forgot how to hash passwords!");
+            }
+        }
+        // update default session
+        result.setSession(user.getSession());
+
+        users.setUser(result);
+
+        Users.scrubUser(result);
         return result;
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftStatus add(UserData userData) throws WebApplicationException
+    public UserInfo post(UserInfo user, @HeaderParam("authorization")String authHeader)
+            throws WebApplicationException
     {
-        AircraftStatus result;
+        DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+        EncryptDecrypt.verifyToken(token);
 
-        if (allAircraft.containsKey(userData.getId())) {
-            throw new ForbiddenException("UserData already exists");
+        if (!EncryptDecrypt.getUsername(token).equals(UserInfo.ADMIN_USER)) {
+            throw new NotAuthorizedException("Only admin users can create users");
         }
-        else {
-            allAircraft.put(userData.getId(), userData);
-            result = new AircraftStatus(userData.getId(), "Ok");
+        if ((user.getUsername() == null) || user.getUsername().equals("")) {
+            throw new BadRequestException("Users must have names");
         }
-        return result;
+        if ((user.getPassword() == null) || user.getPassword().equals("")) {
+            throw new BadRequestException("Users must have passwords");
+        }
+        if (users.getUser(user.getUsername()) != null) {
+            throw new BadRequestException("User already exists");
+        }
+        try {
+            user.setPassword(PasswordStorage.createHash(user.getPassword()));
+        } catch (PasswordStorage.CannotPerformOperationException e) {
+            throw new InternalServerErrorException("Yikes, I forgot how to hash passwords!");
+        }
+        users.setUser(user);
+
+        Users.scrubUser(user);
+        return user;
     }
 }
