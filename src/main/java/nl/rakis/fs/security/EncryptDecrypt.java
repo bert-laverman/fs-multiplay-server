@@ -131,7 +131,6 @@ public class EncryptDecrypt {
     }
 
     public static DecodedJWT decodeToken(String authHeader) {
-        System.err.println("decodeToken()");
         final int prefixLen = BEARER_PREFIX.length();
         final String prefix = ((authHeader != null) && (authHeader.length() > prefixLen)) ? authHeader.substring(0, prefixLen) : "";
         if (!prefix.equalsIgnoreCase(BEARER_PREFIX)) {
@@ -156,7 +155,6 @@ public class EncryptDecrypt {
     }
 
     public static void verifyToken(DecodedJWT token) throws NotAuthorizedException {
-        System.err.println("verifyToken()");
         try {
             JWTVerifier verifier = JWT.require(Algorithm.RSA512(EncryptDecrypt.getPublicKey()))
                     .withIssuer(ISSUER)

@@ -17,28 +17,45 @@
 package nl.rakis.fs;
 
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.util.Map;
 
 /**
  * Standard stuff everyone should have
  */
-public interface FSData {
+public abstract class FSData {
+
+    /**
+     * Add field to JsonObjectBuilder if not null, add as null otherwise
+     * @param bld
+     * @param field
+     * @param value
+     */
+    public static void addIf(JsonObjectBuilder bld, String field, String value)
+    {
+        if (value == null) {
+            bld.addNull(field);
+        }
+        else {
+            bld.add(field, value);
+        }
+    }
 
     /**
      * What is the unique key for this object.
      * @return a unique key.
      */
-    String getKey();
+    public abstract String getKey();
 
     /**
      * Convert this object to a Map
      * @return a HashMap of all fields
      */
-    Map<String,String> toMap();
+    public abstract Map<String,String> toMap();
 
     /**
      * Convert this object to a JsonObject
      * @return A JsonObject of all fields
      */
-    JsonObject toJsonObject();
+    public abstract JsonObject toJsonObject();
 }

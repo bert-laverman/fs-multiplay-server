@@ -31,6 +31,7 @@ public class SetupDB {
                 cmd.set(session.getKey(), session.toString());
 
                 UserInfo user = new UserInfo(UserInfo.ADMIN_USER, PasswordStorage.createHash("admin"));
+                user.setSession(SessionInfo.DUMMY_SESSION);
                 cmd.set(user.getKey(), user.toString());
             }
         } catch (PasswordStorage.CannotPerformOperationException e) {

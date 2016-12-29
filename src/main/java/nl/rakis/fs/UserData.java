@@ -19,7 +19,7 @@ package nl.rakis.fs;
 public class UserData {
     private String id;
     private AircraftInfo aircraftInfo;
-    private Location location;
+    private LocationInfo locationInfo;
 
     public UserData() {
     }
@@ -40,11 +40,11 @@ public class UserData {
         this.aircraftInfo = aircraftInfo;
     }
 
-    public Location getLocation() {
-        return location;
+    public LocationInfo getLocationInfo() {
+        return locationInfo;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLocationInfo(LocationInfo locationInfo) {
+        this.locationInfo = locationInfo;
     }
 }

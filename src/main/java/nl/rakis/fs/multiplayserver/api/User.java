@@ -83,7 +83,9 @@ public class User {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
 
-        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(user.getUsername())) {
+        final String thisUser = EncryptDecrypt.getUsername(token);
+
+        if (!thisUser.equalsIgnoreCase(user.getUsername()) && !thisUser.equalsIgnoreCase(UserInfo.ADMIN_USER)) {
             throw new NotAuthorizedException("You can only update yourself");
         }
         UserInfo result = findUser(user.getUsername());

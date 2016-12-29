@@ -20,6 +20,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Map;
  * Multiplayer session
  */
 public class SessionInfo
-    implements FSData
+    extends FSData
 {
     public static final String FIELD_TYPE = "type";
     public static final String FIELD_NAME = "name";
@@ -38,7 +39,7 @@ public class SessionInfo
     public static final String DUMMY_SESSION = "Dummy Session";
     private String name;
     private String description;
-    private transient List<UserData> users;
+    private transient List<UserData> users = new ArrayList<>();
 
     public SessionInfo() {
 

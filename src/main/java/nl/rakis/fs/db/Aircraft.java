@@ -1,0 +1,113 @@
+package nl.rakis.fs.db;
+
+import com.lambdaworks.redis.KeyScanCursor;
+import com.lambdaworks.redis.RedisClient;
+import com.lambdaworks.redis.ScanArgs;
+import com.lambdaworks.redis.api.StatefulRedisConnection;
+import com.lambdaworks.redis.api.sync.RedisCommands;
+import nl.rakis.fs.AircraftInfo;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.RequestScoped;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * Aircraft.
+ */
+@RequestScoped
+public class Aircraft {
+
+    private static final Logger log = Logger.getLogger(Aircraft.class.getName());
+
+    RedisClient rc;
+
+    @PostConstruct
+    public void init()
+    {
+        rc = SetupDB.getRdc();
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        rc.shutdown();
+        rc = null;
+    }
+
+    public AircraftInfo getAircraftInSession(String callsign, String session)
+    {
+        log.info("getAircraftInSession(\"" + callsign + "\", \"" + session + "\")");
+        AircraftInfo result = null;
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            String value = cmd.get(AircraftInfo.getType()+":"+session+":"+callsign);
+            if (value != null) {
+                result = AircraftInfo.fromString(value);
+                log.info("getAircraftInSession(): Found");
+            }
+        }
+        log.info("getAircraftInSession(): Done");
+        return result;
+    }
+
+    public void setAircraftInSession(AircraftInfo aircraft, String session) {
+        log.info("setAircraftInSession(\"" + aircraft.getAtcId() + "\", \"" + session + "\")");
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            final String key = aircraft.getKey(session);
+            log.info("setAircraftInSession(): Storing aircraft with key \"" + key + "\"");
+
+            cmd.set(key, aircraft.toString());
+        }
+        log.info("setAircraftInSession(): Done");
+    }
+
+    public List<AircraftInfo> getAllAircraftInSession(String session) {
+        log.info("getAllAircraftInSession(\"" + session + "\")");
+        List<AircraftInfo> result = new ArrayList<>();
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+            List<String> allKeys = new ArrayList<>();
+
+            final String match = AircraftInfo.getType() + ":" + session + ":*";
+            log.info("getAllAircraftInSession(): Scanning for keys matching\"" + match + "\")");
+
+            ScanArgs sa = new ScanArgs();
+            sa.match(match);
+            sa.limit(1024);
+            KeyScanCursor<String> cursor = cmd.scan(sa);
+            allKeys.addAll(cursor.getKeys());
+            while (!cursor.isFinished()) {
+                cursor = cmd.scan(cursor, sa);
+                allKeys.addAll(cursor.getKeys());
+            }
+            log.info("getAircraftInSession(): " + allKeys.size() + " key(s) found");
+
+            for (String key: allKeys) {
+                String value = cmd.get(key);
+                if (value != null) {
+                    result.add(AircraftInfo.fromString(value));
+                }
+            }
+        }
+        log.info("getAircraftInSession(): " + result.size() + " aircraft returned");
+        return result;
+    }
+
+    public void removeAircraftFromSession(String callsign, String session) {
+        log.info("removeAircraftFromSession(\"" + callsign + "\", \"" + session + "\")");
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            final String key = AircraftInfo.getType() + ":" + session + ":" + callsign;
+            log.info("setAircraftInSession(): Removing aircraft with key \"" + key + "\"");
+
+            cmd.del(key);
+        }
+        log.info("removeAircraftFromSession(): Done");
+    }
+}

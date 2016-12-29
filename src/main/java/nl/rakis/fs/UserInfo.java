@@ -18,6 +18,7 @@ package nl.rakis.fs;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ import java.util.UUID;
  * A user
  */
 public class UserInfo
-    implements FSData
+    extends FSData
 {
     public static final String FIELD_USERNAME = "username";
     public static final String FIELD_PASSWORD = "password";
@@ -36,6 +37,7 @@ public class UserInfo
     public static final String FIELD_TYPE = "type";
     public static final String USER_TYPE = "User";
     public static final String ADMIN_USER = "admin";
+
     private String username;
     private String password;
     private String session;
@@ -99,12 +101,14 @@ public class UserInfo
 
     @Override
     public JsonObject toJsonObject() {
-        return Json.createObjectBuilder()
+        JsonObjectBuilder bld = Json.createObjectBuilder()
                 .add(FIELD_TYPE, getType())
                 .add(FIELD_USERNAME, getUsername())
-                .add(FIELD_PASSWORD, getPassword())
-                .add(FIELD_SESSION, getSession())
-                .build();
+                .add(FIELD_PASSWORD, getPassword());
+
+        addIf(bld, FIELD_SESSION, getSession());
+
+        return bld.build();
     }
 
     @Override
