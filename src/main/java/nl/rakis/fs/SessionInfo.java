@@ -37,6 +37,7 @@ public class SessionInfo
     public static final String SESSION_TYPE = "Session";
     public static final String ADMIN_SESSION = "Admin Session";
     public static final String DUMMY_SESSION = "Dummy Session";
+
     private String name;
     private String description;
     private transient List<UserData> users = new ArrayList<>();

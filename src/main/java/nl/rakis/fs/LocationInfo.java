@@ -39,14 +39,14 @@ public class LocationInfo
     public static final String FIELD_AIRSPEED = "airspeed";
 
     private String callsign;
-    private double latitude;
-    private double longitude;
-    private double altitude;
-    private double pitch;
-    private double bank;
-    private double heading;
+    private String latitude;
+    private String longitude;
+    private String altitude;
+    private String pitch;
+    private String bank;
+    private String heading;
     private boolean onGround;
-    private long airspeed;
+    private String airspeed;
 
     public LocationInfo() {
     }
@@ -70,14 +70,14 @@ public class LocationInfo
 
         result.put(FIELD_TYPE, getType());
         result.put(FIELD_CALLSIGN, getCallsign());
-        result.put(FIELD_LATITUDE, Double.toString(getLatitude()));
-        result.put(FIELD_LONGITUDE, Double.toString(getLongitude()));
-        result.put(FIELD_ALTITUDE, Double.toString(getAltitude()));
-        result.put(FIELD_PITCH, Double.toString(getPitch()));
-        result.put(FIELD_BANK, Double.toString(getBank()));
-        result.put(FIELD_HEADING, Double.toString(getHeading()));
+        result.put(FIELD_LATITUDE, getLatitude());
+        result.put(FIELD_LONGITUDE, getLongitude());
+        result.put(FIELD_ALTITUDE, getAltitude());
+        result.put(FIELD_PITCH, getPitch());
+        result.put(FIELD_BANK, getBank());
+        result.put(FIELD_HEADING, getHeading());
         result.put(FIELD_ON_GROUND, Boolean.toString(isOnGround()));
-        result.put(FIELD_AIRSPEED, Long.toString(getAirspeed()));
+        result.put(FIELD_AIRSPEED, getAirspeed());
 
         return result;
     }
@@ -112,28 +112,28 @@ public class LocationInfo
                 result.setCallsign(obj.getString(FIELD_CALLSIGN));
             }
             if (obj.containsKey(FIELD_LATITUDE) && !obj.isNull(FIELD_LATITUDE)) {
-                result.setLatitude(obj.getJsonNumber(FIELD_LATITUDE).doubleValue());
+                result.setLatitude(obj.getString(FIELD_LATITUDE));
             }
             if (obj.containsKey(FIELD_LONGITUDE) && !obj.isNull(FIELD_LONGITUDE)) {
-                result.setLongitude(obj.getJsonNumber(FIELD_LONGITUDE).doubleValue());
+                result.setLongitude(obj.getString(FIELD_LONGITUDE));
             }
             if (obj.containsKey(FIELD_ALTITUDE) && !obj.isNull(FIELD_ALTITUDE)) {
-                result.setAltitude(obj.getJsonNumber(FIELD_ALTITUDE).doubleValue());
+                result.setAltitude(obj.getString(FIELD_ALTITUDE));
             }
             if (obj.containsKey(FIELD_PITCH) && !obj.isNull(FIELD_PITCH)) {
-                result.setPitch(obj.getJsonNumber(FIELD_PITCH).doubleValue());
+                result.setPitch(obj.getString(FIELD_PITCH));
             }
             if (obj.containsKey(FIELD_BANK) && !obj.isNull(FIELD_BANK)) {
-                result.setBank(obj.getJsonNumber(FIELD_BANK).doubleValue());
+                result.setBank(obj.getString(FIELD_BANK));
             }
             if (obj.containsKey(FIELD_HEADING) && !obj.isNull(FIELD_HEADING)) {
-                result.setHeading(obj.getJsonNumber(FIELD_HEADING).doubleValue());
+                result.setHeading(obj.getString(FIELD_HEADING));
             }
             if (obj.containsKey(FIELD_ON_GROUND) && !obj.isNull(FIELD_ON_GROUND)) {
                 result.setOnGround(obj.getBoolean(FIELD_ON_GROUND));
             }
             if (obj.containsKey(FIELD_AIRSPEED) && !obj.isNull(FIELD_AIRSPEED)) {
-                result.setAirspeed(obj.getJsonNumber(FIELD_AIRSPEED).longValue());
+                result.setAirspeed(obj.getString(FIELD_AIRSPEED));
             }
         }
 
@@ -160,51 +160,51 @@ public class LocationInfo
         this.callsign = callsign;
     }
 
-    public double getLatitude() {
+    public String getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(String latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public String getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(String longitude) {
         this.longitude = longitude;
     }
 
-    public double getAltitude() {
+    public String getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(double altitude) {
+    public void setAltitude(String altitude) {
         this.altitude = altitude;
     }
 
-    public double getPitch() {
+    public String getPitch() {
         return pitch;
     }
 
-    public void setPitch(double pitch) {
+    public void setPitch(String pitch) {
         this.pitch = pitch;
     }
 
-    public double getBank() {
+    public String getBank() {
         return bank;
     }
 
-    public void setBank(double bank) {
+    public void setBank(String bank) {
         this.bank = bank;
     }
 
-    public double getHeading() {
+    public String getHeading() {
         return heading;
     }
 
-    public void setHeading(double heading) {
+    public void setHeading(String heading) {
         this.heading = heading;
     }
 
@@ -216,11 +216,11 @@ public class LocationInfo
         this.onGround = onGround;
     }
 
-    public long getAirspeed() {
+    public String getAirspeed() {
         return airspeed;
     }
 
-    public void setAirspeed(long airspeed) {
+    public void setAirspeed(String airspeed) {
         this.airspeed = airspeed;
     }
 }
