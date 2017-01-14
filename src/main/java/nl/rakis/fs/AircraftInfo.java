@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,6 @@ public class AircraftInfo
     extends FSData
 {
     public static final String AIRCRAFT_TYPE = "Aircraft";
-
-    public static final String FIELD_TYPE = "type";
-    public static final String FIELD_USERNAME = "username";
-    public static final String FIELD_TITLE = "title";
-    public static final String FIELD_CALLSIGN = "atcId";
-    public static final String FIELD_ATC_MODEL = "atcModel";
-    public static final String FIELD_ATC_TYPE = "atcType";
-    public static final String FIELD_ATC_AIRLINE = "atcAirline";
-    public static final String FIELD_ATC_FLNUM = "atcFlightNumber";
 
     private String username;
     private String title;
@@ -73,14 +64,14 @@ public class AircraftInfo
     public Map<String, String> toMap() {
         Map<String,String> result = new HashMap<>();
 
-        result.put(FIELD_TYPE, getType());
-        result.put(FIELD_USERNAME, (username == null) ? "" : username);
-        result.put(FIELD_TITLE, (title == null) ? "" : title);
-        result.put(FIELD_CALLSIGN, (atcId == null) ? "" : atcId);
-        result.put(FIELD_ATC_TYPE, (atcType == null) ? "" : atcType);
-        result.put(FIELD_ATC_MODEL, (atcModel == null) ? "" : atcModel);
-        result.put(FIELD_ATC_AIRLINE, (atcAirline == null) ? "" : atcAirline);
-        result.put(FIELD_ATC_FLNUM, (atcFlightNumber == null) ? "" : atcFlightNumber);
+        result.put(JsonFields.FIELD_TYPE, getType());
+        result.put(JsonFields.FIELD_USERNAME, (username == null) ? "" : username);
+        result.put(JsonFields.FIELD_TITLE, (title == null) ? "" : title);
+        result.put(JsonFields.FIELD_ATC_ID, (atcId == null) ? "" : atcId);
+        result.put(JsonFields.FIELD_ATC_TYPE, (atcType == null) ? "" : atcType);
+        result.put(JsonFields.FIELD_ATC_MODEL, (atcModel == null) ? "" : atcModel);
+        result.put(JsonFields.FIELD_ATC_AIRLINE, (atcAirline == null) ? "" : atcAirline);
+        result.put(JsonFields.FIELD_ATC_FLNUM, (atcFlightNumber == null) ? "" : atcFlightNumber);
 
         return result;
     }
@@ -88,15 +79,15 @@ public class AircraftInfo
     @Override
     public JsonObject toJsonObject() {
         JsonObjectBuilder bld = Json.createObjectBuilder()
-                .add(FIELD_TYPE, getType())
-                .add(FIELD_CALLSIGN, getAtcId());
+                .add(JsonFields.FIELD_TYPE, getType())
+                .add(JsonFields.FIELD_ATC_ID, getAtcId());
 
-        addIf(bld, FIELD_USERNAME, getUsername());
-        addIf(bld, FIELD_TITLE, getTitle());
-        addIf(bld, FIELD_ATC_TYPE, getAtcType());
-        addIf(bld, FIELD_ATC_MODEL, getAtcModel());
-        addIf(bld, FIELD_ATC_AIRLINE, getAtcAirline());
-        addIf(bld, FIELD_ATC_FLNUM, getAtcFlightNumber());
+        addIf(bld, JsonFields.FIELD_USERNAME, getUsername());
+        addIf(bld, JsonFields.FIELD_TITLE, getTitle());
+        addIf(bld, JsonFields.FIELD_ATC_TYPE, getAtcType());
+        addIf(bld, JsonFields.FIELD_ATC_MODEL, getAtcModel());
+        addIf(bld, JsonFields.FIELD_ATC_AIRLINE, getAtcAirline());
+        addIf(bld, JsonFields.FIELD_ATC_FLNUM, getAtcFlightNumber());
 
         return bld.build();
     }
@@ -110,22 +101,22 @@ public class AircraftInfo
         AircraftInfo result = null;
 
         if (obj != null) {
-            result = new AircraftInfo(obj.getString(FIELD_CALLSIGN));
-            result.setTitle(obj.getString(FIELD_TITLE));
-            if (!obj.isNull(FIELD_USERNAME)) {
-                result.setUsername(obj.getString(FIELD_USERNAME));
+            result = new AircraftInfo(obj.getString(JsonFields.FIELD_ATC_ID));
+            result.setTitle(obj.getString(JsonFields.FIELD_TITLE));
+            if (!obj.isNull(JsonFields.FIELD_USERNAME)) {
+                result.setUsername(obj.getString(JsonFields.FIELD_USERNAME));
             }
-            if (!obj.isNull(FIELD_ATC_TYPE)) {
-                result.setAtcType(obj.getString(FIELD_ATC_TYPE));
+            if (!obj.isNull(JsonFields.FIELD_ATC_TYPE)) {
+                result.setAtcType(obj.getString(JsonFields.FIELD_ATC_TYPE));
             }
-            if (!obj.isNull(FIELD_ATC_MODEL)) {
-                result.setAtcModel(obj.getString(FIELD_ATC_MODEL));
+            if (!obj.isNull(JsonFields.FIELD_ATC_MODEL)) {
+                result.setAtcModel(obj.getString(JsonFields.FIELD_ATC_MODEL));
             }
-            if (!obj.isNull(FIELD_ATC_AIRLINE)) {
-                result.setAtcAirline(obj.getString(FIELD_ATC_AIRLINE));
+            if (!obj.isNull(JsonFields.FIELD_ATC_AIRLINE)) {
+                result.setAtcAirline(obj.getString(JsonFields.FIELD_ATC_AIRLINE));
             }
-            if (!obj.isNull(FIELD_ATC_FLNUM)) {
-                result.setAtcFlightNumber(obj.getString(FIELD_ATC_FLNUM));
+            if (!obj.isNull(JsonFields.FIELD_ATC_FLNUM)) {
+                result.setAtcFlightNumber(obj.getString(JsonFields.FIELD_ATC_FLNUM));
             }
         }
 

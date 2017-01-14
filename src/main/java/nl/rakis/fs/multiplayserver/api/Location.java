@@ -1,13 +1,31 @@
+/*
+ * Copyright 2016, 2017 Bert Laverman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package nl.rakis.fs.multiplayserver.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.AircraftInfo;
 import nl.rakis.fs.LocationInfo;
 import nl.rakis.fs.db.*;
+import nl.rakis.fs.multiplayserver.ClientSessionHandler;
 import nl.rakis.fs.security.EncryptDecrypt;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -27,6 +45,8 @@ public class Location
     private Locations locations;
     @Inject
     private nl.rakis.fs.db.Aircraft aircrafts;
+    @Inject
+    private ClientSessionHandler sessionHandler;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -82,6 +102,9 @@ public class Location
 
         location.setCallsign(callsign);
         locations.setLocation(location, callsign, session);
+
+        sessionHandler.sendToAllConnectedSessionsButOne(location.toJsonObject(), session, callsign);
+
         return locations.getAll(session).stream()
                 .filter((LocationInfo li) -> !li.getCallsign().equalsIgnoreCase(callsign))
                 .collect(Collectors.toList());

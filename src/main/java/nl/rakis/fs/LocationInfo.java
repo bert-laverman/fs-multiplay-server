@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,6 @@ public class LocationInfo
     extends FSData
 {
     public static final String LOCATION_TYPE = "Location";
-    public static final String FIELD_TYPE = "type";
-    public static final String FIELD_CALLSIGN = "callsign";
-    public static final String FIELD_LATITUDE = "latitude";
-    public static final String FIELD_LONGITUDE = "longitude";
-    public static final String FIELD_ALTITUDE = "altitude";
-    public static final String FIELD_PITCH = "pitch";
-    public static final String FIELD_BANK = "bank";
-    public static final String FIELD_HEADING = "heading";
-    public static final String FIELD_ON_GROUND = "onGround";
-    public static final String FIELD_AIRSPEED = "airspeed";
 
     private String callsign;
     private String latitude;
@@ -68,16 +58,16 @@ public class LocationInfo
     public Map<String, String> toMap() {
         Map<String,String> result = new HashMap<>();
 
-        result.put(FIELD_TYPE, getType());
-        result.put(FIELD_CALLSIGN, getCallsign());
-        result.put(FIELD_LATITUDE, getLatitude());
-        result.put(FIELD_LONGITUDE, getLongitude());
-        result.put(FIELD_ALTITUDE, getAltitude());
-        result.put(FIELD_PITCH, getPitch());
-        result.put(FIELD_BANK, getBank());
-        result.put(FIELD_HEADING, getHeading());
-        result.put(FIELD_ON_GROUND, Boolean.toString(isOnGround()));
-        result.put(FIELD_AIRSPEED, getAirspeed());
+        result.put(JsonFields.FIELD_TYPE, getType());
+        result.put(JsonFields.FIELD_CALLSIGN, getCallsign());
+        result.put(JsonFields.FIELD_LATITUDE, getLatitude());
+        result.put(JsonFields.FIELD_LONGITUDE, getLongitude());
+        result.put(JsonFields.FIELD_ALTITUDE, getAltitude());
+        result.put(JsonFields.FIELD_PITCH, getPitch());
+        result.put(JsonFields.FIELD_BANK, getBank());
+        result.put(JsonFields.FIELD_HEADING, getHeading());
+        result.put(JsonFields.FIELD_ON_GROUND, Boolean.toString(isOnGround()));
+        result.put(JsonFields.FIELD_AIRSPEED, getAirspeed());
 
         return result;
     }
@@ -85,16 +75,16 @@ public class LocationInfo
     @Override
     public JsonObject toJsonObject() {
         return Json.createObjectBuilder()
-                .add(FIELD_TYPE, getType())
-                .add(FIELD_CALLSIGN, getCallsign())
-                .add(FIELD_LATITUDE, getLatitude())
-                .add(FIELD_LONGITUDE, getLongitude())
-                .add(FIELD_ALTITUDE, getAltitude())
-                .add(FIELD_PITCH, getPitch())
-                .add(FIELD_BANK, getBank())
-                .add(FIELD_HEADING, getHeading())
-                .add(FIELD_ON_GROUND, isOnGround())
-                .add(FIELD_AIRSPEED, getAirspeed())
+                .add(JsonFields.FIELD_TYPE, getType())
+                .add(JsonFields.FIELD_CALLSIGN, getCallsign())
+                .add(JsonFields.FIELD_LATITUDE, getLatitude())
+                .add(JsonFields.FIELD_LONGITUDE, getLongitude())
+                .add(JsonFields.FIELD_ALTITUDE, getAltitude())
+                .add(JsonFields.FIELD_PITCH, getPitch())
+                .add(JsonFields.FIELD_BANK, getBank())
+                .add(JsonFields.FIELD_HEADING, getHeading())
+                .add(JsonFields.FIELD_ON_GROUND, isOnGround())
+                .add(JsonFields.FIELD_AIRSPEED, getAirspeed())
                 .build();
     }
 
@@ -108,32 +98,32 @@ public class LocationInfo
 
         if (obj != null) {
             result = new LocationInfo();
-            if (!obj.isNull(FIELD_CALLSIGN)) {
-                result.setCallsign(obj.getString(FIELD_CALLSIGN));
+            if (!obj.isNull(JsonFields.FIELD_CALLSIGN)) {
+                result.setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN));
             }
-            if (obj.containsKey(FIELD_LATITUDE) && !obj.isNull(FIELD_LATITUDE)) {
-                result.setLatitude(obj.getString(FIELD_LATITUDE));
+            if (obj.containsKey(JsonFields.FIELD_LATITUDE) && !obj.isNull(JsonFields.FIELD_LATITUDE)) {
+                result.setLatitude(obj.getString(JsonFields.FIELD_LATITUDE));
             }
-            if (obj.containsKey(FIELD_LONGITUDE) && !obj.isNull(FIELD_LONGITUDE)) {
-                result.setLongitude(obj.getString(FIELD_LONGITUDE));
+            if (obj.containsKey(JsonFields.FIELD_LONGITUDE) && !obj.isNull(JsonFields.FIELD_LONGITUDE)) {
+                result.setLongitude(obj.getString(JsonFields.FIELD_LONGITUDE));
             }
-            if (obj.containsKey(FIELD_ALTITUDE) && !obj.isNull(FIELD_ALTITUDE)) {
-                result.setAltitude(obj.getString(FIELD_ALTITUDE));
+            if (obj.containsKey(JsonFields.FIELD_ALTITUDE) && !obj.isNull(JsonFields.FIELD_ALTITUDE)) {
+                result.setAltitude(obj.getString(JsonFields.FIELD_ALTITUDE));
             }
-            if (obj.containsKey(FIELD_PITCH) && !obj.isNull(FIELD_PITCH)) {
-                result.setPitch(obj.getString(FIELD_PITCH));
+            if (obj.containsKey(JsonFields.FIELD_PITCH) && !obj.isNull(JsonFields.FIELD_PITCH)) {
+                result.setPitch(obj.getString(JsonFields.FIELD_PITCH));
             }
-            if (obj.containsKey(FIELD_BANK) && !obj.isNull(FIELD_BANK)) {
-                result.setBank(obj.getString(FIELD_BANK));
+            if (obj.containsKey(JsonFields.FIELD_BANK) && !obj.isNull(JsonFields.FIELD_BANK)) {
+                result.setBank(obj.getString(JsonFields.FIELD_BANK));
             }
-            if (obj.containsKey(FIELD_HEADING) && !obj.isNull(FIELD_HEADING)) {
-                result.setHeading(obj.getString(FIELD_HEADING));
+            if (obj.containsKey(JsonFields.FIELD_HEADING) && !obj.isNull(JsonFields.FIELD_HEADING)) {
+                result.setHeading(obj.getString(JsonFields.FIELD_HEADING));
             }
-            if (obj.containsKey(FIELD_ON_GROUND) && !obj.isNull(FIELD_ON_GROUND)) {
-                result.setOnGround(obj.getBoolean(FIELD_ON_GROUND));
+            if (obj.containsKey(JsonFields.FIELD_ON_GROUND) && !obj.isNull(JsonFields.FIELD_ON_GROUND)) {
+                result.setOnGround(obj.getBoolean(JsonFields.FIELD_ON_GROUND));
             }
-            if (obj.containsKey(FIELD_AIRSPEED) && !obj.isNull(FIELD_AIRSPEED)) {
-                result.setAirspeed(obj.getString(FIELD_AIRSPEED));
+            if (obj.containsKey(JsonFields.FIELD_AIRSPEED) && !obj.isNull(JsonFields.FIELD_AIRSPEED)) {
+                result.setAirspeed(obj.getString(JsonFields.FIELD_AIRSPEED));
             }
         }
 

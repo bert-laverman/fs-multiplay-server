@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,14 +39,15 @@ import static javax.crypto.Cipher.DECRYPT_MODE;
 import static javax.crypto.Cipher.ENCRYPT_MODE;
 
 /**
- * Created by bertl on 12/19/2016.
+ * Token related stuff.
  */
 public class EncryptDecrypt {
 
-    public static final String BEARER_PREFIX = "BEARER ";
-    public static final String ISSUER = "FSMultiPlayer";
-    public static final String CLAIM_USERNAME = "username";
-    public static final String CLAIM_SESSION = "session";
+    private static final String BEARER_PREFIX = "BEARER ";
+    private static final String ISSUER = "FSMultiPlayer";
+    private static final String CLAIM_USERNAME = "username";
+    private static final String CLAIM_SESSION = "session";
+    private static final String CLAIM_CALLSIGN = "callsign";
 
     private static KeyPair generateKeyPair() {
         KeyPair result = null;
@@ -120,6 +121,7 @@ public class EncryptDecrypt {
                 .withIssuer(ISSUER)
                 .withClaim(CLAIM_USERNAME, authInfo.getUsername())
                 .withClaim(CLAIM_SESSION, authInfo.getSession())
+                .withClaim(CLAIM_CALLSIGN, authInfo.getCallsign())
                 .sign(Algorithm.RSA512(getPrivateKey()));
     }
 
@@ -127,10 +129,11 @@ public class EncryptDecrypt {
         return JWT.create()
                 .withIssuer(ISSUER)
                 .withClaim(CLAIM_USERNAME, token.getClaim(CLAIM_USERNAME).asString())
-                .withClaim(CLAIM_SESSION, token.getClaim(CLAIM_SESSION).asString());
+                .withClaim(CLAIM_SESSION, token.getClaim(CLAIM_SESSION).asString())
+                .withClaim(CLAIM_CALLSIGN, token.getClaim(CLAIM_CALLSIGN).asString());
     }
 
-    public static DecodedJWT decodeToken(String authHeader) {
+    public static DecodedJWT decodeToken(String authHeader) throws NotAuthorizedException {
         final int prefixLen = BEARER_PREFIX.length();
         final String prefix = ((authHeader != null) && (authHeader.length() > prefixLen)) ? authHeader.substring(0, prefixLen) : "";
         if (!prefix.equalsIgnoreCase(BEARER_PREFIX)) {
@@ -152,6 +155,10 @@ public class EncryptDecrypt {
 
     public static String getSession(DecodedJWT token) {
         return token.getClaim(CLAIM_SESSION).asString();
+    }
+
+    public static String getCallsign(DecodedJWT token) {
+        return token.getClaim(CLAIM_CALLSIGN).asString();
     }
 
     public static void verifyToken(DecodedJWT token) throws NotAuthorizedException {

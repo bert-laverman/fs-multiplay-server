@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * A user
@@ -31,16 +30,13 @@ import java.util.UUID;
 public class UserInfo
     extends FSData
 {
-    public static final String FIELD_USERNAME = "username";
-    public static final String FIELD_PASSWORD = "password";
-    public static final String FIELD_SESSION = "session";
-    public static final String FIELD_TYPE = "type";
     public static final String USER_TYPE = "User";
     public static final String ADMIN_USER = "admin";
 
     private String username;
     private String password;
     private String session;
+    private String callsign;
 
     public UserInfo() {
     }
@@ -56,6 +52,13 @@ public class UserInfo
         this.session = session;
     }
 
+    public UserInfo(String username, String password, String session, String callsign) {
+        this.username = username;
+        this.password = password;
+        this.session = session;
+        this.callsign = callsign;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,7 +70,9 @@ public class UserInfo
             return false;
         if (getPassword() != null ? !getPassword().equals(userInfo.getPassword()) : userInfo.getPassword() != null)
             return false;
-        return getSession() != null ? getSession().equals(userInfo.getSession()) : userInfo.getSession() == null;
+        if (getSession() != null ? getSession().equals(userInfo.getSession()) : userInfo.getSession() == null)
+            return false;
+        return (getCallsign() != null) ? getCallsign().equals(userInfo.getCallsign()) : userInfo.getCallsign() == null;
     }
 
     @Override
@@ -75,6 +80,7 @@ public class UserInfo
         int result = getUsername() != null ? getUsername().hashCode() : 0;
         result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
         result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
+        result = 31 * result + (getCallsign() != null ? getCallsign().hashCode() : 0);
         return result;
     }
 
@@ -91,10 +97,11 @@ public class UserInfo
     public Map<String, String> toMap() {
         Map<String,String> result = new HashMap<>();
 
-        result.put(FIELD_TYPE, getType());
-        result.put(FIELD_USERNAME, (username == null) ? "" : username);
-        result.put(FIELD_PASSWORD, (password == null) ? "" : password);
-        result.put(FIELD_SESSION, (session == null) ? "" : session);
+        result.put(JsonFields.FIELD_TYPE, getType());
+        result.put(JsonFields.FIELD_USERNAME, (username == null) ? "" : username);
+        result.put(JsonFields.FIELD_PASSWORD, (password == null) ? "" : password);
+        result.put(JsonFields.FIELD_SESSION, (session == null) ? "" : session);
+        result.put(JsonFields.FIELD_CALLSIGN, (callsign == null) ? "" : callsign);
 
         return result;
     }
@@ -102,11 +109,12 @@ public class UserInfo
     @Override
     public JsonObject toJsonObject() {
         JsonObjectBuilder bld = Json.createObjectBuilder()
-                .add(FIELD_TYPE, getType())
-                .add(FIELD_USERNAME, getUsername())
-                .add(FIELD_PASSWORD, getPassword());
+                .add(JsonFields.FIELD_TYPE, getType())
+                .add(JsonFields.FIELD_USERNAME, getUsername())
+                .add(JsonFields.FIELD_PASSWORD, getPassword());
 
-        addIf(bld, FIELD_SESSION, getSession());
+        addIf(bld, JsonFields.FIELD_CALLSIGN, getCallsign());
+        addIf(bld, JsonFields.FIELD_SESSION, getSession());
 
         return bld.build();
     }
@@ -120,8 +128,9 @@ public class UserInfo
         UserInfo result = null;
 
         if (obj != null) {
-            result = new UserInfo(obj.getString(UserInfo.FIELD_USERNAME), obj.getString(UserInfo.FIELD_PASSWORD));
-            result.setSession(obj.getString(UserInfo.FIELD_SESSION, null));
+            result = new UserInfo(obj.getString(JsonFields.FIELD_USERNAME), obj.getString(JsonFields.FIELD_PASSWORD));
+            result.setSession(obj.getString(JsonFields.FIELD_SESSION, null));
+            result.setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN, null));
         }
 
         return result;
@@ -161,5 +170,13 @@ public class UserInfo
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public String getCallsign() {
+        return callsign;
+    }
+
+    public void setCallsign(String callsign) {
+        this.callsign = callsign;
     }
 }

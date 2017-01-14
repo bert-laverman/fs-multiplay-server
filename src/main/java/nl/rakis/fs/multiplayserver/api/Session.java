@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import nl.rakis.fs.UserInfo;
 import nl.rakis.fs.NamedObject;
 import nl.rakis.fs.SessionInfo;
 import nl.rakis.fs.db.Sessions;
+import nl.rakis.fs.multiplayserver.ClientSessionHandler;
 import nl.rakis.fs.security.EncryptDecrypt;
 
 import javax.cache.annotation.CacheResult;
@@ -38,6 +39,8 @@ public class Session {
 
     @Inject
     private Sessions sessions;
+    @Inject
+    private ClientSessionHandler sessionHandler;
 
     @CacheResult
     private SessionInfo findSession(String name)
@@ -165,6 +168,9 @@ public class Session {
         if (authInfo.getSession() == null) {
             throw new BadRequestException("No session");
         }
+        if (authInfo.getCallsign() == null) {
+            throw new BadRequestException("No callsign");
+        }
         SessionInfo session = findSession(authInfo.getSession());
         if (session == null) {
             throw new NotFoundException("Session not found");
@@ -181,6 +187,7 @@ public class Session {
         if (authHeader != null) {
             DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
             result = EncryptDecrypt.getUsername(token);
+            sessionHandler.removeClient(EncryptDecrypt.getSession(token), EncryptDecrypt.getCallsign(token));
         }
         return result;
     }

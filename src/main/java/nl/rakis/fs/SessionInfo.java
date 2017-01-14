@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Bert Laverman
+ * Copyright 2016, 2017 Bert Laverman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,6 @@ import java.util.Map;
 public class SessionInfo
     extends FSData
 {
-    public static final String FIELD_TYPE = "type";
-    public static final String FIELD_NAME = "name";
-    public static final String FIELD_DESCRIPTION = "description";
     public static final String SESSION_TYPE = "Session";
     public static final String ADMIN_SESSION = "Admin Session";
     public static final String DUMMY_SESSION = "Dummy Session";
@@ -105,9 +102,9 @@ public class SessionInfo
     public Map<String, String> toMap() {
         HashMap<String,String> result = new HashMap<>();
 
-        result.put(FIELD_TYPE, getType());
-        result.put(FIELD_NAME, name);
-        result.put(FIELD_DESCRIPTION, (description == null) ? "" : description);
+        result.put(JsonFields.FIELD_TYPE, getType());
+        result.put(JsonFields.FIELD_NAME, name);
+        result.put(JsonFields.FIELD_DESCRIPTION, (description == null) ? "" : description);
 
         return result;
     }
@@ -115,9 +112,9 @@ public class SessionInfo
     @Override
     public JsonObject toJsonObject() {
         return Json.createObjectBuilder()
-                .add(FIELD_TYPE, getType())
-                .add(FIELD_NAME, getName())
-                .add(FIELD_DESCRIPTION, (description == null) ? "" : description)
+                .add(JsonFields.FIELD_TYPE, getType())
+                .add(JsonFields.FIELD_NAME, getName())
+                .add(JsonFields.FIELD_DESCRIPTION, (description == null) ? "" : description)
                 .build();
     }
 
@@ -130,7 +127,7 @@ public class SessionInfo
         SessionInfo result = null;
 
         if (obj != null) {
-            result = new SessionInfo(obj.getString(FIELD_NAME), obj.getString(FIELD_DESCRIPTION));
+            result = new SessionInfo(obj.getString(JsonFields.FIELD_NAME), obj.getString(JsonFields.FIELD_DESCRIPTION));
         }
 
         return result;
