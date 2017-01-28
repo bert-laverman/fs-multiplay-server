@@ -187,6 +187,9 @@ public class Session {
         }
         authInfo.setSession(session.getName());
         UserSessionInfo sessionInfo = new UserSessionInfo(authInfo.getUsername(), authInfo.getSession(), authInfo.getCallsign());
+
+        userSessions.put(sessionInfo);
+
         return EncryptDecrypt.newToken(sessionInfo);
     }
 
