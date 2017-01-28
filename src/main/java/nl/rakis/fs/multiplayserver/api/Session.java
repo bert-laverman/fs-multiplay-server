@@ -17,28 +17,33 @@
 package nl.rakis.fs.multiplayserver.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.UserInfo;
-import nl.rakis.fs.NamedObject;
 import nl.rakis.fs.SessionInfo;
-import nl.rakis.fs.db.Sessions;
+import nl.rakis.fs.UserInfo;
+import nl.rakis.fs.UserSessionInfo;
+import nl.rakis.fs.db.*;
 import nl.rakis.fs.multiplayserver.ClientSessionHandler;
 import nl.rakis.fs.security.EncryptDecrypt;
 
 import javax.cache.annotation.CacheResult;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
-import java.util.UUID;
 
-@Stateless
+@ApplicationScoped
 @Path("session")
 public class Session {
 
     @Inject
     private Sessions sessions;
+    @Inject
+    private UserSessions userSessions;
+    @Inject
+    private nl.rakis.fs.db.Aircraft aircraft;
+    @Inject
+    private Locations locations;
     @Inject
     private ClientSessionHandler sessionHandler;
 
@@ -54,6 +59,7 @@ public class Session {
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        userSessions.get(EncryptDecrypt.getSessionId(token));
 
         return sessions.getAllSessions();
     }
@@ -66,9 +72,10 @@ public class Session {
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER) &&
-                !EncryptDecrypt.getSession(token).equals(name))
+        if (!userSession.getUsername().equalsIgnoreCase(UserInfo.ADMIN_USER) &&
+                !userSession.getSession().equals(name))
         {
             throw new NotAuthorizedException(("Not your session"));
         }
@@ -86,8 +93,9 @@ public class Session {
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+        if (!userSession.getUsername().equalsIgnoreCase(UserInfo.ADMIN_USER)) {
             throw new NotAuthorizedException("Only admin users can change session details");
         }
         SessionInfo result = findSession(name);
@@ -111,13 +119,14 @@ public class Session {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public SessionInfo newSession(NamedObject session,
+    public SessionInfo newSession(SessionInfo session,
                                   @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+        if (!userSession.getUsername().equalsIgnoreCase(UserInfo.ADMIN_USER)) {
             throw new NotAuthorizedException("Only admin users can create sessions");
         }
 
@@ -139,12 +148,13 @@ public class Session {
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        if (!EncryptDecrypt.getUsername(token).equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+        if (!userSession.getUsername().equalsIgnoreCase(UserInfo.ADMIN_USER)) {
             throw new NotAuthorizedException("Only admin users can create sessions");
         }
 
-        if (EncryptDecrypt.getSession(token).equals(name)) {
+        if (userSession.getSession().equals(name)) {
             throw new ForbiddenException("Cannot remove the session you're in");
         }
         if (findSession(name) == null) {
@@ -176,7 +186,8 @@ public class Session {
             throw new NotFoundException("Session not found");
         }
         authInfo.setSession(session.getName());
-        return EncryptDecrypt.newToken(authInfo);
+        UserSessionInfo sessionInfo = new UserSessionInfo(authInfo.getUsername(), authInfo.getSession(), authInfo.getCallsign());
+        return EncryptDecrypt.newToken(sessionInfo);
     }
 
     @GET
@@ -186,8 +197,17 @@ public class Session {
         String result = "Not logged in";
         if (authHeader != null) {
             DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
+
             result = EncryptDecrypt.getUsername(token);
-            sessionHandler.removeClient(EncryptDecrypt.getSession(token), EncryptDecrypt.getCallsign(token));
+            final String sessionId = EncryptDecrypt.getSessionId(token);
+            final String callsign = EncryptDecrypt.getCallsign(token);
+            final String flySession = EncryptDecrypt.getSession(token);
+
+            locations.removeLocation(callsign, flySession);
+            aircraft.removeAircraftFromSession(callsign, flySession);
+            sessionHandler.removeClient(userSessions.get(sessionId));
+
+            userSessions.remove(sessionId);
         }
         return result;
     }

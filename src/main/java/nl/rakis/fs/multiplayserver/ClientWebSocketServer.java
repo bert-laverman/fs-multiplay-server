@@ -18,6 +18,7 @@ package nl.rakis.fs.multiplayserver;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.JsonFields;
+import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -45,6 +46,8 @@ public class ClientWebSocketServer {
 
     @Inject
     private ClientSessionHandler sessionHandler;
+    @Inject
+    private UserSessions userSessions;
 
     @OnOpen
     public void open(Session session)
@@ -79,6 +82,24 @@ public class ClientWebSocketServer {
         return !obj.isNull(name) && !obj.getString(name).isEmpty();
     }
 
+    private void startNewSession(Session session, JsonObject msg)
+    {
+        DecodedJWT token;
+        try {
+            token = EncryptDecrypt.decodeToken(msg.getString(JsonFields.FIELD_TOKEN));
+            EncryptDecrypt.verifyToken(token);
+        } catch (NotAuthorizedException e) {
+            forceCloseSession(session, CloseCodes.CANNOT_ACCEPT, "Not authorized");
+            return;
+        }
+
+        if (!checkField(msg, JsonFields.FIELD_TOKEN)) {
+            forceCloseSession(session, CloseCodes.CANNOT_ACCEPT, "No \"token\" in \"hello\"");
+            return;
+        }
+        sessionHandler.addClient(session, userSessions.get(EncryptDecrypt.getSessionId(token)));
+    }
+
     @OnMessage
     public void message(String message, Session session)
     {
@@ -89,27 +110,11 @@ public class ClientWebSocketServer {
             if (!checkField(msg, JsonFields.FIELD_TYPE)) {
                 forceCloseSession(session, CloseCodes.PROTOCOL_ERROR, "No \"type\" in message");
             }
-            else if (!checkField(msg, JsonFields.FIELD_TOKEN)) {
-                forceCloseSession(session, CloseCodes.CANNOT_ACCEPT, "No \"token\" in message");
-            }
             else {
-                DecodedJWT token;
-                try {
-                    token = EncryptDecrypt.decodeToken(msg.getString(JsonFields.FIELD_TOKEN));
-                    EncryptDecrypt.verifyToken(token);
-                } catch (NotAuthorizedException e) {
-                    forceCloseSession(session, CloseCodes.CANNOT_ACCEPT, "Not authorized");
-                    return;
-                }
-
                 final String type = msg.getString(JsonFields.FIELD_TYPE);
                 switch (type) {
                     case "hello":
-                        if (!checkField(msg, JsonFields.FIELD_CALLSIGN)) {
-                            forceCloseSession(session, CloseCodes.PROTOCOL_ERROR, "No callsign in \"hello\"");
-                            return;
-                        }
-                        sessionHandler.addClient(EncryptDecrypt.getSession(token), msg.getString(JsonFields.FIELD_CALLSIGN), session);
+                        startNewSession(session, msg);
                         break;
 
                     case "add":

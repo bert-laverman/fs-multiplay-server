@@ -47,4 +47,6 @@ public class JsonFields {
 
     public static final String FIELD_TYPE = "type";
     public static final String FIELD_TOKEN = "token";
+    public static final String FIELD_SESSIONID = "sessionId";
+    public static final String FIELD_LAST_ACCESS = "lastAccess";
 }

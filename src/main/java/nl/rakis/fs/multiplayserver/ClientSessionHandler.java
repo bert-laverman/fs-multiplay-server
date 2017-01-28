@@ -16,6 +16,8 @@
  */
 package nl.rakis.fs.multiplayserver;
 
+import nl.rakis.fs.UserSessionInfo;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -29,9 +31,9 @@ import java.util.*;
 @ApplicationScoped
 public class ClientSessionHandler {
 
-    private final Map<String, Session>     allWSSessions = new HashMap<>();
-    private final Map<String, Set<String>> allSessionMembers = new HashMap<>();
-    private final Map<String, Client>      allClients = new HashMap<>();
+    private final Map<String, Session>         allWSSessions = new HashMap<>();
+    private final Map<String, Set<String>>     allSessionMembers = new HashMap<>();
+    private final Map<String, UserSessionInfo> allClients = new HashMap<>();
 
     public void addWSSession(Session session) {
         allWSSessions.put(session.getId(), session);
@@ -40,57 +42,58 @@ public class ClientSessionHandler {
         allWSSessions.remove(session.getId());
     }
 
-    public List<Client> getClients() {
+    public List<UserSessionInfo> getClients() {
         return new ArrayList<>(allClients.values());
     }
 
-    public void addClient(String session, String callsign, Session wsSession) {
-        Client client = new Client(session, callsign, wsSession.getId());
+    public void addClient(Session session, UserSessionInfo userSession) {
+        allClients.put(userSession.getKey(), userSession);
 
-        allClients.put(client.getKey(), client);
-        if (allSessionMembers.containsKey(session)) {
-            allSessionMembers.get(session).add(callsign);
+        final String flySession = userSession.getSession();
+
+        if (allSessionMembers.containsKey(flySession)) {
+            allSessionMembers.get(flySession).add(userSession.getKey());
         }
         else {
             Set<String> newSession = new HashSet<>();
-            newSession.add(callsign);
-            allSessionMembers.put(session, newSession);
+            newSession.add(userSession.getKey());
+            allSessionMembers.put(flySession, newSession);
         }
 
         // store callsign
-        wsSession.getUserProperties().put("callsign", callsign);
-        wsSession.getUserProperties().put("session", session);
+        session.getUserProperties().put("userSession", userSession);
 
-        sendToAllConnectedSessionsButOne(createAddMessage(client), session, callsign);
+        sendToAllInFlySessionButOne(createAddMessage(userSession), flySession, userSession.getSessionId());
     }
 
-    public void removeClient(String session, String callsign) {
-        if (allSessionMembers.containsKey(session)) {
-            allSessionMembers.get(session).remove(callsign);
+    public void removeClient(UserSessionInfo userSession) {
+        final String flySession = userSession.getSession();
+        if (allSessionMembers.containsKey(flySession)) {
+            allSessionMembers.get(flySession).remove(userSession.getCallsign());
         }
-        final String key = session + ":" + callsign;
+        final String key = userSession.getKey();
         if (allClients.containsKey(key)) {
-            Client client = allClients.get(key);
+            UserSessionInfo client = allClients.get(key);
 
             allClients.remove(key);
 
-            sendToAllConnectedSessions(createRemoveMessage(client), session);
+            sendToAllInFlySession(createRemoveMessage(client), flySession);
         }
     }
 
-    private JsonObject createAddMessage(Client client) {
+    private JsonObject createAddMessage(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
                 .add("type", "add")
-                .add("session", client.getSession())
-                .add("callsign", client.getCallsign())
+                .add("session", userSession.getSession())
+                .add("callsign", userSession.getCallsign())
                 .build();
     }
 
-    private JsonObject createRemoveMessage(Client client) {
+    private JsonObject createRemoveMessage(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
                 .add("type", "remove")
-                .add("session", client.getSession())
-                .add("callsign", client.getCallsign())
+                .add("session", userSession.getSession())
+                .add("callsign", userSession.getCallsign())
                 .build();
     }
 
@@ -104,24 +107,23 @@ public class ClientSessionHandler {
         }
     }
 
-    public void sendToAllConnectedSessions(JsonObject message, String session) {
+    public void sendToAllInFlySession(JsonObject message, String flySession) {
         for (Session wsSession: allWSSessions.values()) {
-            final String sess = wsSession.getUserProperties().get("session").toString();
-            if ((sess == null) || !sess.equals(session)) {
+            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get("userSession");
+            if ((sess == null) || !sess.getSession().equals(flySession)) {
                 continue;
             }
             sendToSession(wsSession, message);
         }
     }
 
-    public void sendToAllConnectedSessionsButOne(JsonObject message, String session, String notThisOne) {
+    public void sendToAllInFlySessionButOne(JsonObject message, String flySession, UUID sessionId) {
         for (Session wsSession: allWSSessions.values()) {
-            final String sess = wsSession.getUserProperties().get("session").toString();
-            if ((sess == null) || !sess.equals(session)) {
+            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get("userSession");
+            if ((sess == null) || !sess.getSession().equals(flySession)) {
                 continue;
             }
-            final String callsign = wsSession.getUserProperties().get("callsign").toString();
-            if ((callsign == null) || callsign.equals(notThisOne)) {
+            if (sessionId.equals(sess.getSessionId())) {
                 continue;
             }
             sendToSession(wsSession, message);

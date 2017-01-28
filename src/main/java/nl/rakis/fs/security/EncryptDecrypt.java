@@ -24,6 +24,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.UserInfo;
+import nl.rakis.fs.UserSessionInfo;
 
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
@@ -45,6 +46,7 @@ public class EncryptDecrypt {
 
     private static final String BEARER_PREFIX = "BEARER ";
     private static final String ISSUER = "FSMultiPlayer";
+    private static final String CLAIM_SESSIONID = "sessionId";
     private static final String CLAIM_USERNAME = "username";
     private static final String CLAIM_SESSION = "session";
     private static final String CLAIM_CALLSIGN = "callsign";
@@ -116,18 +118,20 @@ public class EncryptDecrypt {
         return process(s, DECRYPT_MODE, getPublicKey());
     }
 
-    public static String newToken(UserInfo authInfo) {
+    public static String newToken(UserSessionInfo userSessionInfo) {
         return JWT.create()
                 .withIssuer(ISSUER)
-                .withClaim(CLAIM_USERNAME, authInfo.getUsername())
-                .withClaim(CLAIM_SESSION, authInfo.getSession())
-                .withClaim(CLAIM_CALLSIGN, authInfo.getCallsign())
+                .withClaim(CLAIM_SESSIONID, userSessionInfo.getSessionId().toString())
+                .withClaim(CLAIM_USERNAME, userSessionInfo.getUsername())
+                .withClaim(CLAIM_SESSION, userSessionInfo.getSession())
+                .withClaim(CLAIM_CALLSIGN, userSessionInfo.getCallsign())
                 .sign(Algorithm.RSA512(getPrivateKey()));
     }
 
     public static JWTCreator.Builder newToken(DecodedJWT token) {
         return JWT.create()
                 .withIssuer(ISSUER)
+                .withClaim(CLAIM_SESSIONID, token.getClaim(CLAIM_SESSIONID).asString())
                 .withClaim(CLAIM_USERNAME, token.getClaim(CLAIM_USERNAME).asString())
                 .withClaim(CLAIM_SESSION, token.getClaim(CLAIM_SESSION).asString())
                 .withClaim(CLAIM_CALLSIGN, token.getClaim(CLAIM_CALLSIGN).asString());
@@ -147,6 +151,10 @@ public class EncryptDecrypt {
             throw new NotAuthorizedException("Bad token");
         }
         return result;
+    }
+
+    public static String getSessionId(DecodedJWT token) {
+        return token.getClaim(CLAIM_SESSIONID).asString();
     }
 
     public static String getUsername(DecodedJWT token) {

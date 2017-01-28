@@ -17,23 +17,19 @@
 package nl.rakis.fs.multiplayserver.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.AircraftStatus;
-import nl.rakis.fs.UserInfo;
 import nl.rakis.fs.UserInfo;
 import nl.rakis.fs.db.Users;
 import nl.rakis.fs.security.EncryptDecrypt;
 import nl.rakis.fs.security.PasswordStorage;
 
 import javax.cache.annotation.CacheResult;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-@Stateless
+@ApplicationScoped
 @Path("user")
 public class User {
 

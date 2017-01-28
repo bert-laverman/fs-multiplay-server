@@ -19,13 +19,14 @@ package nl.rakis.fs.multiplayserver.api;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.AircraftInfo;
 import nl.rakis.fs.LocationInfo;
-import nl.rakis.fs.db.*;
+import nl.rakis.fs.UserSessionInfo;
+import nl.rakis.fs.db.Locations;
+import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.multiplayserver.ClientSessionHandler;
 import nl.rakis.fs.security.EncryptDecrypt;
 
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -35,12 +36,14 @@ import java.util.stream.Collectors;
 /**
  * Aircraft location.
  */
-@Stateless
+@ApplicationScoped
 @Path("location")
 public class Location
 {
     private static final Logger log = Logger.getLogger(Location.class.getName());
 
+    @Inject
+    private UserSessions userSessions;
     @Inject
     private Locations locations;
     @Inject
@@ -55,6 +58,7 @@ public class Location
         log.info("getAll()");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        userSessions.get(EncryptDecrypt.getSessionId(token));
 
         log.info("getAll(): Done");
         return locations.getAll(EncryptDecrypt.getSession(token));
@@ -68,8 +72,9 @@ public class Location
         log.info("get(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        LocationInfo result = locations.getLocation(callsign, EncryptDecrypt.getSession(token));
+        LocationInfo result = locations.getLocation(callsign, userSession.getSession());
         if (result == null) {
             throw new NotFoundException("No such callsign");
         }
@@ -88,24 +93,24 @@ public class Location
         log.info("put(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        final UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        final String session = EncryptDecrypt.getSession(token);
-        final String username = EncryptDecrypt.getUsername(token);
-        AircraftInfo aircraft = aircrafts.getAircraftInSession(callsign, session);
+        final String flySession = userSession.getSession();
+        AircraftInfo aircraft = aircrafts.getAircraftInSession(callsign, flySession);
 
         if (aircraft == null) {
             throw new NotFoundException("Callsign not found");
         }
-        if (!username.equalsIgnoreCase(aircraft.getUsername())) {
+        if (!userSession.getUsername().equalsIgnoreCase(aircraft.getUsername())) {
             throw new NotAuthorizedException("You can only send locations for your own aircraft");
         }
 
         location.setCallsign(callsign);
-        locations.setLocation(location, callsign, session);
+        locations.setLocation(location, callsign, flySession);
 
-        sessionHandler.sendToAllConnectedSessionsButOne(location.toJsonObject(), session, callsign);
+        sessionHandler.sendToAllInFlySessionButOne(location.toJsonObject(), flySession, userSession.getSessionId());
 
-        return locations.getAll(session).stream()
+        return locations.getAll(flySession).stream()
                 .filter((LocationInfo li) -> !li.getCallsign().equalsIgnoreCase(callsign))
                 .collect(Collectors.toList());
     }
@@ -120,8 +125,9 @@ public class Location
         log.info("delete(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        final String session = EncryptDecrypt.getSession(token);
+        final String session = userSession.getSession();
         locations.removeLocation(callsign, session);
         log.info("delete(): Done");
     }

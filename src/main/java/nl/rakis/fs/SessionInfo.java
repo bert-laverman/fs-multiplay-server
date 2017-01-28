@@ -37,7 +37,6 @@ public class SessionInfo
 
     private String name;
     private String description;
-    private transient List<UserData> users = new ArrayList<>();
 
     public SessionInfo() {
 
@@ -56,16 +55,13 @@ public class SessionInfo
         SessionInfo that = (SessionInfo) o;
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        return users != null ? users.equals(that.users) : that.users == null;
-
+        return (description != null ? !description.equals(that.description) : that.description != null);
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (users != null ? users.hashCode() : 0);
         return result;
     }
 
@@ -75,7 +71,6 @@ public class SessionInfo
 
         newSession.setName(getName());
         newSession.setDescription(getDescription());
-        newSession.setUsers(getUsers());
 
         return newSession;
     }
@@ -161,15 +156,4 @@ public class SessionInfo
         this.description = description;
     }
 
-    public int getNumberOfUsers() {
-        return users.size();
-    }
-
-    public List<UserData> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<UserData> users) {
-        this.users = users;
-    }
 }

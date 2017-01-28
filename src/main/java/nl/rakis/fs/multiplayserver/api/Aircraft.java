@@ -19,13 +19,13 @@ package nl.rakis.fs.multiplayserver.api;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.AircraftInfo;
 import nl.rakis.fs.UserInfo;
+import nl.rakis.fs.UserSessionInfo;
 import nl.rakis.fs.db.Locations;
-import nl.rakis.fs.db.Users;
+import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
-import nl.rakis.fs.security.PasswordStorage;
 
 import javax.cache.annotation.CacheResult;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -35,12 +35,14 @@ import java.util.logging.Logger;
 /**
  * API for aircraft.
  */
-@Stateless
+@ApplicationScoped
 @Path("aircraft")
 public class Aircraft {
 
     private static final Logger log = Logger.getLogger(Aircraft.class.getName());
 
+    @Inject
+    private UserSessions userSessions;
     @Inject
     private nl.rakis.fs.db.Aircraft aircrafts;
     @Inject
@@ -58,9 +60,10 @@ public class Aircraft {
         log.info("getAll()");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
         log.info("getAll(): Done");
-        return aircrafts.getAllAircraftInSession(EncryptDecrypt.getSession(token));
+        return aircrafts.getAllAircraftInSession(userSession.getSession());
     }
 
     @GET
@@ -72,8 +75,9 @@ public class Aircraft {
         log.info("get(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        AircraftInfo result = findAircraft(callsign, EncryptDecrypt.getSession(token));
+        AircraftInfo result = findAircraft(callsign, userSession.getSession());
         if (result == null) {
             throw new NotFoundException("No such callsign");
         }
@@ -91,9 +95,10 @@ public class Aircraft {
         log.info("put(): callsign=\"" + callsign + "\", aircraft=\"" + aircraft.toString() + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        final String session = EncryptDecrypt.getSession(token);
-        final String username = EncryptDecrypt.getUsername(token);
+        final String session = userSession.getSession();
+        final String username = userSession.getUsername();
         AircraftInfo current = findAircraft(aircraft.getAtcId(), session);
 
         if (current == null) {
@@ -120,12 +125,13 @@ public class Aircraft {
         log.info("post(): aircraft=\"" + aircraft.toString() + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        final String session = EncryptDecrypt.getSession(token);
-        final String username = EncryptDecrypt.getUsername(token);
+        final String session = userSession.getSession();
+        final String username = userSession.getUsername();
 
         if ((aircraft.getAtcId() == null) || aircraft.getAtcId().equals("")) {
-            throw new BadRequestException("Aircraft must have callsigns");
+            throw new BadRequestException("Aircraft must have callsign");
         }
         if ((aircraft.getTitle() == null) || aircraft.getTitle().equals("")) {
             throw new BadRequestException("Aircraft must have a 'title'");
@@ -148,9 +154,10 @@ public class Aircraft {
         log.info("delete(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
+        UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        final String session = EncryptDecrypt.getSession(token);
-        final String username = EncryptDecrypt.getUsername(token);
+        final String session = userSession.getSession();
+        final String username = userSession.getUsername();
 
         AircraftInfo current = findAircraft(callsign, session);
         if (current == null) {

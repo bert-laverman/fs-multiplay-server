@@ -23,12 +23,19 @@ import nl.rakis.fs.SessionInfo;
 import nl.rakis.fs.UserInfo;
 import nl.rakis.fs.security.PasswordStorage;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.Configuration;
+import javax.cache.configuration.MutableConfiguration;
+
 /**
  * Fill the database if empty
  */
 public class SetupDB {
 
     public static final String INIT_DONE = "initDone";
+    public static final String USER_SESSION_CACHE = "UserSessionCache";
 
     public static RedisClient getRdc() {
         return RedisClient.create("redis://redis:6379/0");
@@ -54,5 +61,21 @@ public class SetupDB {
             throw new RuntimeException(e);
         }
         rc.shutdown();
+    }
+
+    public static Cache<String,String> getCacheManager() {
+        return Caching.getCache(USER_SESSION_CACHE, String.class, String.class);
+    }
+
+    static {
+        CacheManager mgr = Caching.getCachingProvider().getCacheManager();
+        MutableConfiguration<String,String> conf = new MutableConfiguration<>();
+        conf.setTypes(String.class, String.class);
+        try {
+        /*Cache<String,String> cache = */
+            mgr.createCache(USER_SESSION_CACHE, conf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
