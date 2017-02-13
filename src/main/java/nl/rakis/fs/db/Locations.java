@@ -54,7 +54,7 @@ public class Locations
 
     public LocationInfo getLocation(String callsign, String session)
     {
-        log.info("getLocation(\"" + callsign + "\", \"" + session + "\")");
+        log.finest("getLocation(\"" + callsign + "\", \"" + session + "\")");
         LocationInfo result = null;
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -62,23 +62,23 @@ public class Locations
             String value = cmd.get(LocationInfo.getType()+":"+session+":"+callsign);
             if (value != null) {
                 result = LocationInfo.fromString(value);
-                log.info("getLocation(): Found");
+                log.finest("getLocation(): Found");
             }
         }
-        log.info("getLocation(): Done");
+        log.finest("getLocation(): Done");
         return result;
     }
 
     public List<LocationInfo> getAll(String session)
     {
-        log.info("getAll(\"" + session + "\")");
+        log.finest("getAll(\"" + session + "\")");
         List<LocationInfo> result = new ArrayList<>();
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
             List<String> allKeys = new ArrayList<>();
 
             final String match = LocationInfo.getType() + ":" + session + ":*";
-            log.info("getAll(): Scanning for keys matching\"" + match + "\")");
+            log.finest("getAll(): Scanning for keys matching\"" + match + "\")");
 
             ScanArgs sa = new ScanArgs();
             sa.match(match);
@@ -89,44 +89,44 @@ public class Locations
                 cursor = cmd.scan(cursor, sa);
                 allKeys.addAll(cursor.getKeys());
             }
-            log.info("getAll(): " + allKeys.size() + " key(s) found");
+            log.finest("getAll(): " + allKeys.size() + " key(s) found");
 
             for (String key: allKeys) {
                 String value = cmd.get(key);
                 if (value != null) {
-                    log.info("getAll(): Found " + value);
+                    log.finest("getAll(): Found " + value);
                     result.add(LocationInfo.fromString(value));
                 }
             }
         }
-        log.info("getAll(): " + result.size() + " locations returned");
+        log.finest("getAll(): " + result.size() + " locations returned");
         return result;
     }
 
     public void setLocation(LocationInfo location, String callsign, String session) {
-        log.info("setLocation(..., \"" + callsign + "\", \"" + session + "\")");
+        log.finest("setLocation(..., \"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
             final String key = location.getKey(session, callsign);
-            log.info("setLocation(): Storing location with key \"" + key + "\"");
+            log.finest("setLocation(): Storing location with key \"" + key + "\"");
 
             cmd.set(key, location.toString());
         }
-        log.info("setLocation(): Done");
+        log.finest("setLocation(): Done");
     }
 
     public void removeLocation(String callsign, String session) {
-        log.info("removeLocation(\"" + callsign + "\", \"" + session + "\")");
+        log.finest("removeLocation(\"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
             final String key = LocationInfo.getType() + ":" + session + ":" + callsign;
-            log.info("removeLocation(): Removing location with key \"" + key + "\"");
+            log.finest("removeLocation(): Removing location with key \"" + key + "\"");
 
             cmd.del(key);
         }
-        log.info("removeLocation(): Done");
+        log.finest("removeLocation(): Done");
     }
 
 }
