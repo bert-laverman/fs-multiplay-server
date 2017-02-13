@@ -54,7 +54,7 @@ public class Aircraft {
 
     public AircraftInfo getAircraftInSession(String callsign, String session)
     {
-        log.info("getAircraftInSession(\"" + callsign + "\", \"" + session + "\")");
+        log.finest("getAircraftInSession(\"" + callsign + "\", \"" + session + "\")");
         AircraftInfo result = null;
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -62,35 +62,35 @@ public class Aircraft {
             String value = cmd.get(AircraftInfo.getType()+":"+session+":"+callsign);
             if (value != null) {
                 result = AircraftInfo.fromString(value);
-                log.info("getAircraftInSession(): Found");
+                log.finest("getAircraftInSession(): Found");
             }
         }
-        log.info("getAircraftInSession(): Done");
+        log.finest("getAircraftInSession(): Done");
         return result;
     }
 
     public void setAircraftInSession(AircraftInfo aircraft, String session) {
-        log.info("setAircraftInSession(\"" + aircraft.getAtcId() + "\", \"" + session + "\")");
+        log.finest("setAircraftInSession(\"" + aircraft.getAtcId() + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
             final String key = aircraft.getKey(session);
-            log.info("setAircraftInSession(): Storing aircraft with key \"" + key + "\"");
+            log.finest("setAircraftInSession(): Storing aircraft with key \"" + key + "\"");
 
             cmd.set(key, aircraft.toString());
         }
-        log.info("setAircraftInSession(): Done");
+        log.finest("setAircraftInSession(): Done");
     }
 
     public List<AircraftInfo> getAllAircraftInSession(String session) {
-        log.info("getAllAircraftInSession(\"" + session + "\")");
+        log.finest("getAllAircraftInSession(\"" + session + "\")");
         List<AircraftInfo> result = new ArrayList<>();
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
             List<String> allKeys = new ArrayList<>();
 
             final String match = AircraftInfo.getType() + ":" + session + ":*";
-            log.info("getAllAircraftInSession(): Scanning for keys matching\"" + match + "\")");
+            log.finest("getAllAircraftInSession(): Scanning for keys matching\"" + match + "\")");
 
             ScanArgs sa = new ScanArgs();
             sa.match(match);
@@ -101,7 +101,7 @@ public class Aircraft {
                 cursor = cmd.scan(cursor, sa);
                 allKeys.addAll(cursor.getKeys());
             }
-            log.info("getAircraftInSession(): " + allKeys.size() + " key(s) found");
+            log.finest("getAircraftInSession(): " + allKeys.size() + " key(s) found");
 
             for (String key: allKeys) {
                 String value = cmd.get(key);
@@ -110,20 +110,20 @@ public class Aircraft {
                 }
             }
         }
-        log.info("getAircraftInSession(): " + result.size() + " aircraft returned");
+        log.finest("getAircraftInSession(): " + result.size() + " aircraft returned");
         return result;
     }
 
     public void removeAircraftFromSession(String callsign, String session) {
-        log.info("removeAircraftFromSession(\"" + callsign + "\", \"" + session + "\")");
+        log.finest("removeAircraftFromSession(\"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
             final String key = AircraftInfo.getType() + ":" + session + ":" + callsign;
-            log.info("setAircraftInSession(): Removing aircraft with key \"" + key + "\"");
+            log.finest("setAircraftInSession(): Removing aircraft with key \"" + key + "\"");
 
             cmd.del(key);
         }
-        log.info("removeAircraftFromSession(): Done");
+        log.finest("removeAircraftFromSession(): Done");
     }
 }

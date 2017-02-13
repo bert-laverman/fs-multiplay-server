@@ -49,4 +49,26 @@ public class JsonFields {
     public static final String FIELD_TOKEN = "token";
     public static final String FIELD_SESSIONID = "sessionId";
     public static final String FIELD_LAST_ACCESS = "lastAccess";
+    public static final String FIELD_STRB = "strb";
+    public static final String FIELD_LAND = "land";
+    public static final String FIELD_TAXI = "taxi";
+    public static final String FIELD_BCN = "bcn";
+    public static final String FIELD_NAV = "nav";
+    public static final String FIELD_LOGO = "logo";
+    public static final String FIELD_WING = "wing";
+    public static final String FIELD_RECG = "recg";
+    public static final String FIELD_CABN = "cabn";
+    public static final String FIELD_ENGINE_ON = "engineOn";
+    public static final String FIELD_THROTTLE = "throttle";
+    public static final String FIELD_RUDDER_POS = "rudderPos";
+    public static final String FIELD_RUDDER_TRIM_POS = "rudderTrimPos";
+    public static final String FIELD_ELEVATOR_POS = "elevatorPos";
+    public static final String FIELD_ELEVATOR_TRIM_POS = "elevatorTrimPos";
+    public static final String FIELD_AILERON_POS = "aileronPos";
+    public static final String FIELD_AILERON_TRIM_POS = "aileronTrimPos";
+    public static final String FIELD_SPOILERS_POS = "spoilersPos";
+    public static final String FIELD_FLAPS_POS = "flapsPos";
+    public static final String FIELD_GEARS_DOWN = "gearsDown";
+    public static final String FIELD_PARKING_BRAKE_POS = "parkingBrakePos";
+    public static final String FIELD_DOOR_POS = "doorPos";
 }

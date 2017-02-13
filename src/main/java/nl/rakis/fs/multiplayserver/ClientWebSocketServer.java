@@ -17,9 +17,7 @@
 package nl.rakis.fs.multiplayserver;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.AircraftInfo;
-import nl.rakis.fs.JsonFields;
-import nl.rakis.fs.LocationInfo;
+import nl.rakis.fs.*;
 import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
@@ -124,9 +122,9 @@ public class ClientWebSocketServer {
 
                     case AircraftInfo.AIRCRAFT_TYPE:
                     case LocationInfo.LOCATION_TYPE:
-                    case "engines":
-                    case "lights":
-                    case "controls":
+                    case EngineInfo.TYPE_ENGINES:
+                    case LightInfo.TYPE_LIGHTS:
+                    case ControlsInfo.TYPE_CONTROLS:
 
                     default:
                         //IGNORE

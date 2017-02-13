@@ -16,14 +16,16 @@
  */
 package nl.rakis.fs;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Standard stuff everyone should have
  */
 public abstract class FSData {
+
+    private static final Logger log = Logger.getLogger(FSData.class.getName());
 
     /**
      * Add field to JsonObjectBuilder if not null, add as null otherwise
@@ -39,6 +41,33 @@ public abstract class FSData {
         else {
             bld.add(field, value);
         }
+    }
+
+    public static boolean getBoolIf(JsonObject obj, String property, boolean deflt)
+    {
+        boolean result = deflt;
+
+        if ((obj != null) && (property != null) && obj.containsKey(property) && !obj.isNull(property)) {
+            try {
+                result = obj.getBoolean(property);
+            } catch (ClassCastException e) {
+                try {
+                    result = Boolean.parseBoolean(obj.getString(property));
+                } catch (ClassCastException e1) {
+                    log.warning("Ignoring property \"" + property + "\", cannot turn it into a boolean");
+                }
+            }
+        }
+        return result;
+    }
+
+    public static JsonArray toArray(int[] arr) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+
+        for (int i: arr) {
+            bld.add(i);
+        }
+        return bld.build();
     }
 
     /**
@@ -58,4 +87,14 @@ public abstract class FSData {
      * @return A JsonObject of all fields
      */
     public abstract JsonObject toJsonObject();
+
+
+    /**
+     * Convert to serialized JSON.
+     * @return A String containing the serialized object.
+     */
+    @Override
+    public String toString() {
+        return toJsonObject().toString();
+    }
 }
