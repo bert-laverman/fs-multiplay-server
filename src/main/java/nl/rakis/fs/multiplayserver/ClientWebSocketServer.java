@@ -17,7 +17,9 @@
 package nl.rakis.fs.multiplayserver;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import nl.rakis.fs.AircraftInfo;
 import nl.rakis.fs.JsonFields;
+import nl.rakis.fs.LocationInfo;
 import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
@@ -52,14 +54,12 @@ public class ClientWebSocketServer {
     @OnOpen
     public void open(Session session)
     {
-        log.info("open()");
         sessionHandler.addWSSession(session);
     }
 
     @OnClose
     public void close(Session session)
     {
-        log.info("close()");
         sessionHandler.removeWSSession(session);
     }
 
@@ -103,7 +103,6 @@ public class ClientWebSocketServer {
     @OnMessage
     public void message(String message, Session session)
     {
-        log.info("message()");
         try (JsonReader rd = Json.createReader(new StringReader(message))) {
             JsonObject msg = rd.readObject();
 
@@ -122,6 +121,12 @@ public class ClientWebSocketServer {
                     case "remove":
                         //IGNORE
                         break;
+
+                    case AircraftInfo.AIRCRAFT_TYPE:
+                    case LocationInfo.LOCATION_TYPE:
+                    case "engines":
+                    case "lights":
+                    case "controls":
 
                     default:
                         //IGNORE
