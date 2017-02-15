@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * The state of the lights.
  */
 public class LightInfo
-    extends FSData
+    extends FSKeylessData
 {
 
     private static final Logger log = Logger.getLogger(LightInfo.class.getName());
@@ -30,6 +30,8 @@ public class LightInfo
     boolean cabn;
 
     public LightInfo() {
+        super(getType());
+
         strb = false;
         land = false;
         taxi = false;
@@ -114,6 +116,25 @@ public class LightInfo
             }
         }
         return result;
+    }
+
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setStrb(getBoolIf(obj, JsonFields.FIELD_STRB, false));
+                setLand(getBoolIf(obj, JsonFields.FIELD_LAND, false));
+                setTaxi(getBoolIf(obj, JsonFields.FIELD_TAXI, false));
+                setBcn(getBoolIf(obj, JsonFields.FIELD_BCN, false));
+                setNav(getBoolIf(obj, JsonFields.FIELD_NAV, false));
+                setLogo(getBoolIf(obj, JsonFields.FIELD_LOGO, false));
+                setWing(getBoolIf(obj, JsonFields.FIELD_WING, false));
+                setRecg(getBoolIf(obj, JsonFields.FIELD_RECG, false));
+                setCabn(getBoolIf(obj, JsonFields.FIELD_CABN, false));
+            }
+        }
     }
 
     public boolean isStrb() {

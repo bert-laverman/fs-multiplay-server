@@ -40,6 +40,11 @@ public class AircraftInfo
     private String atcAirline;
     private String atcFlightNumber;
 
+    private LocationInfo location;
+    private EngineInfo   engines;
+    private LightInfo    lights;
+    private ControlsInfo controls;
+
     public AircraftInfo() {
     }
 
@@ -135,6 +140,33 @@ public class AircraftInfo
         return result;
     }
 
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setAtcId(obj.getString(JsonFields.FIELD_ATC_ID));
+                setTitle(obj.getString(JsonFields.FIELD_TITLE));
+                if (!obj.isNull(JsonFields.FIELD_USERNAME)) {
+                    setUsername(obj.getString(JsonFields.FIELD_USERNAME));
+                }
+                if (!obj.isNull(JsonFields.FIELD_ATC_TYPE)) {
+                    setAtcType(obj.getString(JsonFields.FIELD_ATC_TYPE));
+                }
+                if (!obj.isNull(JsonFields.FIELD_ATC_MODEL)) {
+                    setAtcModel(obj.getString(JsonFields.FIELD_ATC_MODEL));
+                }
+                if (!obj.isNull(JsonFields.FIELD_ATC_AIRLINE)) {
+                    setAtcAirline(obj.getString(JsonFields.FIELD_ATC_AIRLINE));
+                }
+                if (!obj.isNull(JsonFields.FIELD_ATC_FLNUM)) {
+                    setAtcFlightNumber(obj.getString(JsonFields.FIELD_ATC_FLNUM));
+                }
+            }
+        }
+    }
+
     public String getUsername() {
         return username;
     }
@@ -189,5 +221,37 @@ public class AircraftInfo
 
     public void setAtcFlightNumber(String atcFlightNumber) {
         this.atcFlightNumber = atcFlightNumber;
+    }
+
+    public LocationInfo getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationInfo location) {
+        this.location = location;
+    }
+
+    public EngineInfo getEngines() {
+        return engines;
+    }
+
+    public void setEngines(EngineInfo engines) {
+        this.engines = engines;
+    }
+
+    public LightInfo getLights() {
+        return lights;
+    }
+
+    public void setLights(LightInfo lights) {
+        this.lights = lights;
+    }
+
+    public ControlsInfo getControls() {
+        return controls;
+    }
+
+    public void setControls(ControlsInfo controls) {
+        this.controls = controls;
     }
 }

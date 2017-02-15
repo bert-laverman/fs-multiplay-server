@@ -97,4 +97,10 @@ public abstract class FSData {
     public String toString() {
         return toJsonObject().toString();
     }
+
+    /**
+     * Parse a serialized JSON object and initialize the object from it.
+     * @param jsonString the serialized JSON object
+     */
+    public abstract void parse(String jsonString);
 }

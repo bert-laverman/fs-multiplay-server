@@ -31,6 +31,7 @@ import java.util.*;
 @ApplicationScoped
 public class ClientSessionHandler {
 
+    public static final String USER_SESSION = "userSession";
     private final Map<String, Session>         allWSSessions = new HashMap<>();
     private final Map<String, Set<String>>     allSessionMembers = new HashMap<>();
     private final Map<String, UserSessionInfo> allClients = new HashMap<>();
@@ -61,7 +62,7 @@ public class ClientSessionHandler {
         }
 
         // store callsign
-        session.getUserProperties().put("userSession", userSession);
+        session.getUserProperties().put(USER_SESSION, userSession);
 
         sendToAllInFlySessionButOne(createAddMessage(userSession), flySession, userSession.getSessionId());
     }
@@ -97,6 +98,13 @@ public class ClientSessionHandler {
                 .build();
     }
 
+    public JsonObject createReloadMessage(UserSessionInfo userSession) {
+        return Json.createObjectBuilder()
+                .add("type", "reload")
+                .add("callsign", userSession.getCallsign())
+                .build();
+    }
+
     private void sendToSession(Session session, JsonObject message) {
         try {
             session.getBasicRemote().sendText(message.toString());
@@ -109,7 +117,7 @@ public class ClientSessionHandler {
 
     public void sendToAllInFlySession(JsonObject message, String flySession) {
         for (Session wsSession: allWSSessions.values()) {
-            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get("userSession");
+            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get(USER_SESSION);
             if ((sess == null) || !sess.getSession().equals(flySession)) {
                 continue;
             }
@@ -119,7 +127,7 @@ public class ClientSessionHandler {
 
     public void sendToAllInFlySessionButOne(JsonObject message, String flySession, UUID sessionId) {
         for (Session wsSession: allWSSessions.values()) {
-            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get("userSession");
+            final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get(USER_SESSION);
             if ((sess == null) || !sess.getSession().equals(flySession)) {
                 continue;
             }

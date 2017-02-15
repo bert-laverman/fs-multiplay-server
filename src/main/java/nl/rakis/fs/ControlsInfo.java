@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * The state of the controls.
  */
 public class ControlsInfo
-        extends FSData
+        extends FSKeylessData
 {
 
     private static final Logger log = Logger.getLogger(ControlsInfo.class.getName());
@@ -32,6 +32,7 @@ public class ControlsInfo
     private double doorPos;
 
     public ControlsInfo() {
+        super(getType());
     }
 
     @Override
@@ -113,6 +114,27 @@ public class ControlsInfo
             }
         }
         return result;
+    }
+
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setRudderPos(obj.getInt(JsonFields.FIELD_RUDDER_POS));
+                setRudderTrimPos(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
+                setElevatorPos(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
+                setElevatorTrimPos(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
+                setAileronPos(obj.getInt(JsonFields.FIELD_AILERON_POS));
+                setAileronTrimPos(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
+                setSpoilersPos(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
+                setFlapsPos(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
+                setGearsDown(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
+                setParkingBrakePos(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
+                setDoorPos(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
+            }
+        }
     }
 
     public int getRudderPos() {

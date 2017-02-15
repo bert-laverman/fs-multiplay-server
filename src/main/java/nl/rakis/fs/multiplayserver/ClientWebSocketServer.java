@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.logging.Logger;
 
+import static nl.rakis.fs.multiplayserver.ClientSessionHandler.USER_SESSION;
+
 /**
  * Server Endpoint for the WebSocket channel.
  */
@@ -109,6 +111,7 @@ public class ClientWebSocketServer {
             }
             else {
                 final String type = msg.getString(JsonFields.FIELD_TYPE);
+                final UserSessionInfo userSession = (UserSessionInfo) session.getUserProperties().get(USER_SESSION);
                 switch (type) {
                     case "hello":
                         startNewSession(session, msg);
@@ -121,6 +124,10 @@ public class ClientWebSocketServer {
                         break;
 
                     case AircraftInfo.AIRCRAFT_TYPE:
+                        sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
+                                userSession.getSession(), userSession.getSessionId());
+                        break;
+
                     case LocationInfo.LOCATION_TYPE:
                     case EngineInfo.TYPE_ENGINES:
                     case LightInfo.TYPE_LIGHTS:

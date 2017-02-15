@@ -13,17 +13,19 @@ import java.util.logging.Logger;
  * The state of the engine(s).
  */
 public class EngineInfo
-        extends FSData
+        extends FSKeylessData
 {
 
     private static final Logger log = Logger.getLogger(EngineInfo.class.getName());
 
-    public static final String TYPE_ENGINES = "Engines";
+    public static final String TYPE_ENGINES = "Extras";
 
     private int[] engineOn;
     private int[] throttle;
 
     public EngineInfo() {
+        super(getType());
+
         engineOn = new int[4];
         throttle = new int[4];
     }
@@ -89,6 +91,18 @@ public class EngineInfo
             }
         }
         return result;
+    }
+
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setEngineOn(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
+                setThrottle(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
+            }
+        }
     }
 
     public int[] getEngineOn() {

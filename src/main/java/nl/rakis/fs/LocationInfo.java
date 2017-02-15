@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LocationInfo
-    extends FSData
+    extends FSKeylessData
 {
     public static final String LOCATION_TYPE = "Location";
 
@@ -39,6 +39,7 @@ public class LocationInfo
     private String airspeed;
 
     public LocationInfo() {
+        super(getType());
     }
 
     public static String getType() {
@@ -48,10 +49,6 @@ public class LocationInfo
     @Override
     public String getKey() {
         return getType() + ":" + getLatitude() + ":" + getLongitude();
-    }
-
-    public String getKey(String session, String callsign) {
-        return getType() + ":" + session + ":" + callsign;
     }
 
     @Override
@@ -140,6 +137,43 @@ public class LocationInfo
             }
         }
         return result;
+    }
+
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                if (!obj.isNull(JsonFields.FIELD_CALLSIGN)) {
+                    setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN));
+                }
+                if (obj.containsKey(JsonFields.FIELD_LATITUDE) && !obj.isNull(JsonFields.FIELD_LATITUDE)) {
+                    setLatitude(obj.getString(JsonFields.FIELD_LATITUDE));
+                }
+                if (obj.containsKey(JsonFields.FIELD_LONGITUDE) && !obj.isNull(JsonFields.FIELD_LONGITUDE)) {
+                    setLongitude(obj.getString(JsonFields.FIELD_LONGITUDE));
+                }
+                if (obj.containsKey(JsonFields.FIELD_ALTITUDE) && !obj.isNull(JsonFields.FIELD_ALTITUDE)) {
+                    setAltitude(obj.getString(JsonFields.FIELD_ALTITUDE));
+                }
+                if (obj.containsKey(JsonFields.FIELD_PITCH) && !obj.isNull(JsonFields.FIELD_PITCH)) {
+                    setPitch(obj.getString(JsonFields.FIELD_PITCH));
+                }
+                if (obj.containsKey(JsonFields.FIELD_BANK) && !obj.isNull(JsonFields.FIELD_BANK)) {
+                    setBank(obj.getString(JsonFields.FIELD_BANK));
+                }
+                if (obj.containsKey(JsonFields.FIELD_HEADING) && !obj.isNull(JsonFields.FIELD_HEADING)) {
+                    setHeading(obj.getString(JsonFields.FIELD_HEADING));
+                }
+                if (obj.containsKey(JsonFields.FIELD_ON_GROUND) && !obj.isNull(JsonFields.FIELD_ON_GROUND)) {
+                    setOnGround(obj.getBoolean(JsonFields.FIELD_ON_GROUND));
+                }
+                if (obj.containsKey(JsonFields.FIELD_AIRSPEED) && !obj.isNull(JsonFields.FIELD_AIRSPEED)) {
+                    setAirspeed(obj.getString(JsonFields.FIELD_AIRSPEED));
+                }
+            }
+        }
     }
 
     public String getCallsign() {

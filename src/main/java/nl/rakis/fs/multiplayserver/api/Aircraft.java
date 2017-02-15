@@ -17,9 +17,8 @@
 package nl.rakis.fs.multiplayserver.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.AircraftInfo;
-import nl.rakis.fs.UserInfo;
-import nl.rakis.fs.UserSessionInfo;
+import nl.rakis.fs.*;
+import nl.rakis.fs.db.Extras;
 import nl.rakis.fs.db.Locations;
 import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
@@ -47,6 +46,8 @@ public class Aircraft {
     private nl.rakis.fs.db.Aircraft aircrafts;
     @Inject
     private Locations locations;
+    @Inject
+    private Extras extras;
 
     @CacheResult
     private AircraftInfo findAircraft(String callsign, String session) {
@@ -57,31 +58,54 @@ public class Aircraft {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<AircraftInfo> getAll(@HeaderParam("authorization")String authHeader)
     {
-        log.info("getAll()");
+        log.finest("getAll()");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        log.info("getAll(): Done");
+        log.finest("getAll(): Done");
         return aircrafts.getAllAircraftInSession(userSession.getSession());
     }
 
     @GET
     @Path("{callsign}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo get(@PathParam("callsign") String callsign, @HeaderParam("authorization")String authHeader)
+    public AircraftInfo get(@PathParam("callsign") String callsign,
+                            @QueryParam("_expand") String expand,
+                            @HeaderParam("authorization")String authHeader)
             throws WebApplicationException
     {
-        log.info("get(): callsign=\"" + callsign + "\"");
+        log.finest("get(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
-        AircraftInfo result = findAircraft(callsign, userSession.getSession());
+        final String session = userSession.getSession();
+        AircraftInfo result = findAircraft(callsign, session);
         if (result == null) {
             throw new NotFoundException("No such callsign");
         }
-        log.info("get(): Done");
+
+        if ((expand != null) && !expand.isEmpty()) {
+            String[] fields=expand.split(",");
+            for (String field: fields) {
+                switch (field) {
+                    case "engines":
+                        result.setEngines(extras.get(session, callsign, EngineInfo.class));
+                        break;
+                    case "lights":
+                        result.setLights(extras.get(session, callsign, LightInfo.class));
+                        break;
+                    case "controls":
+                        result.setControls(extras.get(session, callsign, ControlsInfo.class));
+                        break;
+                    case "location":
+                        result.setLocation(extras.get(session, callsign, LocationInfo.class));
+                        break;
+                }
+            }
+        }
+        log.finest("get(): Done");
         return result;
     }
 
@@ -89,10 +113,12 @@ public class Aircraft {
     @Path("{callsign}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo put(AircraftInfo aircraft, @PathParam("callsign") String callsign, @HeaderParam("authorization")String authHeader)
+    public AircraftInfo put(AircraftInfo aircraft,
+                            @PathParam("callsign") String callsign,
+                            @HeaderParam("authorization")String authHeader)
             throws WebApplicationException
     {
-        log.info("put(): callsign=\"" + callsign + "\", aircraft=\"" + aircraft.toString() + "\"");
+        log.finest("put(): callsign=\"" + callsign + "\", aircraft=\"" + aircraft.toString() + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
@@ -112,7 +138,7 @@ public class Aircraft {
         aircraft.setAtcId(callsign);
         aircrafts.setAircraftInSession(aircraft, session);
 
-        log.info("put(): Done");
+        log.finest("put(): Done");
         return aircraft;
     }
 
@@ -122,7 +148,7 @@ public class Aircraft {
     public AircraftInfo post(AircraftInfo aircraft, @HeaderParam("authorization")String authHeader)
             throws WebApplicationException
     {
-        log.info("post(): aircraft=\"" + aircraft.toString() + "\"");
+        log.finest("post(): aircraft=\"" + aircraft.toString() + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
@@ -143,7 +169,7 @@ public class Aircraft {
         aircraft.setUsername(username);
         aircrafts.setAircraftInSession(aircraft, session);
 
-        log.info("post(): Done");
+        log.finest("post(): Done");
         return aircraft;
     }
 
@@ -151,7 +177,7 @@ public class Aircraft {
     @Path("{callsign}")
     public void delete(@PathParam("callsign") String callsign, @HeaderParam("authorization")String authHeader)
     {
-        log.info("delete(): callsign=\"" + callsign + "\"");
+        log.finest("delete(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
@@ -170,6 +196,6 @@ public class Aircraft {
         locations.removeLocation(callsign, session);
         aircrafts.removeAircraftFromSession(callsign, session);
 
-        log.info("delete(): Done");
+        log.finest("delete(): Done");
     }
 }
