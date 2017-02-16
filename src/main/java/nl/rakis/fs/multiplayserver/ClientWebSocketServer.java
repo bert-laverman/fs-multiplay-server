@@ -18,6 +18,7 @@ package nl.rakis.fs.multiplayserver;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.*;
+import nl.rakis.fs.db.Extras;
 import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
@@ -33,6 +34,7 @@ import javax.websocket.server.ServerEndpoint;
 import javax.ws.rs.NotAuthorizedException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import static nl.rakis.fs.multiplayserver.ClientSessionHandler.USER_SESSION;
@@ -50,6 +52,8 @@ public class ClientWebSocketServer {
     private ClientSessionHandler sessionHandler;
     @Inject
     private UserSessions userSessions;
+    @Inject
+    private Extras extras;
 
     @OnOpen
     public void open(Session session)
@@ -112,6 +116,10 @@ public class ClientWebSocketServer {
             else {
                 final String type = msg.getString(JsonFields.FIELD_TYPE);
                 final UserSessionInfo userSession = (UserSessionInfo) session.getUserProperties().get(USER_SESSION);
+                final String flySession = userSession.getSession();
+                final UUID sessionId = userSession.getSessionId();
+                final String callsign = userSession.getCallsign();
+
                 switch (type) {
                     case "hello":
                         startNewSession(session, msg);
@@ -125,13 +133,28 @@ public class ClientWebSocketServer {
 
                     case AircraftInfo.AIRCRAFT_TYPE:
                         sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
-                                userSession.getSession(), userSession.getSessionId());
+                                flySession, sessionId);
                         break;
 
                     case LocationInfo.LOCATION_TYPE:
+                        extras.set(message, flySession, callsign, LocationInfo.class);
+                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
+                        break;
+
                     case EngineInfo.TYPE_ENGINES:
+                        extras.set(message, flySession, callsign, EngineInfo.class);
+                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
+                        break;
+
                     case LightInfo.TYPE_LIGHTS:
+                        extras.set(message, flySession, callsign, LightInfo.class);
+                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
+                        break;
+
                     case ControlsInfo.TYPE_CONTROLS:
+                        extras.set(message, flySession, callsign, ControlsInfo.class);
+                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
+                        break;
 
                     default:
                         //IGNORE

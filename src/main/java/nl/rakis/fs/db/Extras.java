@@ -83,6 +83,21 @@ public class Extras
         log.finest("set(): Done");
     }
 
+    public <T extends FSKeylessData> void set(String jsonObj, String callsign, String session, Class<T> clazz) {
+        log.finest("set(..., \"" + callsign + "\", \"" + session + "\")");
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            final T obj = clazz.newInstance(); // only to be able to do the next one.
+            final String key = obj.getKey(session, callsign);
+
+            cmd.set(key, jsonObj);
+        } catch (Exception e) {
+            log.severe(e.getLocalizedMessage());
+        }
+        log.finest("set(): Done");
+    }
+
     public <T extends FSKeylessData> void remove(T obj, String callsign, String session) {
         log.finest("remove(\"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {

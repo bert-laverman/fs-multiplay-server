@@ -82,30 +82,30 @@ public class ClientSessionHandler {
         }
     }
 
-    private JsonObject createAddMessage(UserSessionInfo userSession) {
+    private String createAddMessage(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
                 .add("type", "add")
                 .add("session", userSession.getSession())
                 .add("callsign", userSession.getCallsign())
-                .build();
+                .build().toString();
     }
 
-    private JsonObject createRemoveMessage(UserSessionInfo userSession) {
+    private String createRemoveMessage(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
                 .add("type", "remove")
                 .add("session", userSession.getSession())
                 .add("callsign", userSession.getCallsign())
-                .build();
+                .build().toString();
     }
 
-    public JsonObject createReloadMessage(UserSessionInfo userSession) {
+    public String createReloadMessage(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
                 .add("type", "reload")
                 .add("callsign", userSession.getCallsign())
-                .build();
+                .build().toString();
     }
 
-    private void sendToSession(Session session, JsonObject message) {
+    private void sendToSession(Session session, String message) {
         try {
             session.getBasicRemote().sendText(message.toString());
         }
@@ -115,7 +115,7 @@ public class ClientSessionHandler {
         }
     }
 
-    public void sendToAllInFlySession(JsonObject message, String flySession) {
+    public void sendToAllInFlySession(String message, String flySession) {
         for (Session wsSession: allWSSessions.values()) {
             final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get(USER_SESSION);
             if ((sess == null) || !sess.getSession().equals(flySession)) {
@@ -125,7 +125,7 @@ public class ClientSessionHandler {
         }
     }
 
-    public void sendToAllInFlySessionButOne(JsonObject message, String flySession, UUID sessionId) {
+    public void sendToAllInFlySessionButOne(String message, String flySession, UUID sessionId) {
         for (Session wsSession: allWSSessions.values()) {
             final UserSessionInfo sess = (UserSessionInfo) wsSession.getUserProperties().get(USER_SESSION);
             if ((sess == null) || !sess.getSession().equals(flySession)) {

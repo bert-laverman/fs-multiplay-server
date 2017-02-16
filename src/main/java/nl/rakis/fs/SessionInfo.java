@@ -140,6 +140,18 @@ public class SessionInfo
         return result;
     }
 
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setName(obj.getString(JsonFields.FIELD_NAME));
+                setDescription(obj.getString(JsonFields.FIELD_DESCRIPTION, null));
+            }
+        }
+    }
+
     public String getName() {
         return name;
     }

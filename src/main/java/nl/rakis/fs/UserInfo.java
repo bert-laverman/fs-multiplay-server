@@ -148,6 +148,20 @@ public class UserInfo
         return result;
     }
 
+    public void parse(String json) {
+        if (json != null) {
+            try (StringReader sr = new StringReader(json);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+
+                setUsername(obj.getString(JsonFields.FIELD_USERNAME));
+                setPassword(obj.getString(JsonFields.FIELD_PASSWORD, null));
+                setSession(obj.getString(JsonFields.FIELD_SESSION, null));
+                setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN));
+            }
+        }
+    }
+
     public String getUsername() {
         return username;
     }

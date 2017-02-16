@@ -108,7 +108,7 @@ public class Location
         location.setCallsign(callsign);
         locations.setLocation(location, callsign, flySession);
 
-        sessionHandler.sendToAllInFlySessionButOne(location.toJsonObject(), flySession, userSession.getSessionId());
+        sessionHandler.sendToAllInFlySessionButOne(location.toString(), flySession, userSession.getSessionId());
 
         return locations.getAll(flySession).stream()
                 .filter((LocationInfo li) -> !li.getCallsign().equalsIgnoreCase(callsign))
