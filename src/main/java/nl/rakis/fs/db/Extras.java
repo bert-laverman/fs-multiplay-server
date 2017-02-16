@@ -50,28 +50,34 @@ public class Extras
         rc = null;
     }
 
-    public <T extends FSKeylessData> T get(String callsign, String session, Class<T> clazz)
+    public <T extends FSKeylessData> T get(String session, String callsign, Class<T> clazz)
     {
-        log.finest("get(\"" + callsign + "\", \"" + session + "\")");
+        log.info("get(\"" + callsign + "\", \"" + session + "\", "+clazz.getCanonicalName()+")");
         T result = null;
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
-            String value = cmd.get(EngineInfo.getType()+":"+session+":"+callsign);
-            if (value != null) {
-                try {
-                    result = clazz.newInstance();
+            try {
+                result = clazz.newInstance();
+                final String key = result.getKey(session, callsign);
+                log.info("get(): key=\"" + key + "\"");
+
+                final String value = cmd.get(key);
+                if (value != null) {
                     result.parse(value);
-                } catch (Exception e) {
-                    log.severe(e.getLocalizedMessage());
                 }
+                else {
+                    result = null;
+                }
+            } catch (Exception e) {
+                log.severe(e.getLocalizedMessage());
             }
         }
         log.finest("get(): Done");
         return result;
     }
 
-    public <T extends FSKeylessData> void set(T obj, String callsign, String session) {
+    public <T extends FSKeylessData> void set(T obj, String session, String callsign) {
         log.finest("set(..., \"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -83,7 +89,7 @@ public class Extras
         log.finest("set(): Done");
     }
 
-    public <T extends FSKeylessData> void set(String jsonObj, String callsign, String session, Class<T> clazz) {
+    public <T extends FSKeylessData> void set(String jsonObj, String session, String callsign, Class<T> clazz) {
         log.finest("set(..., \"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -98,7 +104,7 @@ public class Extras
         log.finest("set(): Done");
     }
 
-    public <T extends FSKeylessData> void remove(T obj, String callsign, String session) {
+    public <T extends FSKeylessData> void remove(T obj, String session, String callsign) {
         log.finest("remove(\"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();

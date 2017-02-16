@@ -87,8 +87,10 @@ public class Aircraft {
         }
 
         if ((expand != null) && !expand.isEmpty()) {
+            log.info("get(): _expand=\"" + expand + "\"");
             String[] fields=expand.split(",");
             for (String field: fields) {
+                log.info("get(): field=\"" + field + "\"");
                 switch (field) {
                     case "engines":
                         result.setEngines(extras.get(session, callsign, EngineInfo.class));

@@ -59,7 +59,10 @@ public class Locations
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
 
-            String value = cmd.get(LocationInfo.getType()+":"+session+":"+callsign);
+            final String key = LocationInfo.getType() + ":" + session + ":" + callsign;
+            log.info("getLocation(): key=\"" + key + "\"");
+
+            String value = cmd.get(key);
             if (value != null) {
                 result = LocationInfo.fromString(value);
                 log.finest("getLocation(): Found");
