@@ -18,7 +18,7 @@ public class EngineInfo
 
     private static final Logger log = Logger.getLogger(EngineInfo.class.getName());
 
-    public static final String TYPE_ENGINES = "Extras";
+    public static final String TYPE_ENGINES = "Engines";
 
     private int[] engineOn;
     private int[] throttle;

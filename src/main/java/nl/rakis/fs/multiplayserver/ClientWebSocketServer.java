@@ -105,62 +105,68 @@ public class ClientWebSocketServer {
     }
 
     @OnMessage
-    public void message(String message, Session session)
+    public void message(String msg, Session session)
     {
-        try (JsonReader rd = Json.createReader(new StringReader(message))) {
-            JsonObject msg = rd.readObject();
+        log.finest("message(): msg=\"" + msg + "\"");
+        try (JsonReader rd = Json.createReader(new StringReader(msg))) {
+            JsonObject obj = rd.readObject();
 
-            if (!checkField(msg, JsonFields.FIELD_TYPE)) {
+            if (!checkField(obj, JsonFields.FIELD_TYPE)) {
                 forceCloseSession(session, CloseCodes.PROTOCOL_ERROR, "No \"type\" in message");
             }
             else {
-                final String type = msg.getString(JsonFields.FIELD_TYPE);
-                final UserSessionInfo userSession = (UserSessionInfo) session.getUserProperties().get(USER_SESSION);
-                final String flySession = userSession.getSession();
-                final UUID sessionId = userSession.getSessionId();
-                final String callsign = userSession.getCallsign();
+                final String type = obj.getString(JsonFields.FIELD_TYPE);
 
-                switch (type) {
-                    case "hello":
-                        startNewSession(session, msg);
-                        break;
+                if (type.equals("hello")) {
+                    startNewSession(session, obj);
+                }
+                else {
+                    final UserSessionInfo userSession = (UserSessionInfo) session.getUserProperties().get(USER_SESSION);
+                    final String flySession = userSession.getSession();
+                    final UUID sessionId = userSession.getSessionId();
+                    final String callsign = userSession.getCallsign();
 
-                    case "add":
-                        //FALLTHROUGH
-                    case "remove":
-                        //IGNORE
-                        break;
+                    switch (type) {
+                        case "add":
+                            //FALLTHROUGH
+                        case "remove":
+                            //IGNORE
+                            break;
 
-                    case AircraftInfo.AIRCRAFT_TYPE:
-                        sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
-                                flySession, sessionId);
-                        break;
+                        case AircraftInfo.AIRCRAFT_TYPE:
+                            sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
+                                    flySession, sessionId);
+                            break;
 
-                    case LocationInfo.LOCATION_TYPE:
-                        extras.set(message, flySession, callsign, LocationInfo.class);
-                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
-                        break;
+                        case LocationInfo.LOCATION_TYPE:
+                            extras.set(msg, flySession, callsign, LocationInfo.class);
+                            sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
+                            break;
 
-                    case EngineInfo.TYPE_ENGINES:
-                        extras.set(message, flySession, callsign, EngineInfo.class);
-                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
-                        break;
+                        case EngineInfo.TYPE_ENGINES:
+                            extras.set(msg, flySession, callsign, EngineInfo.class);
+                            sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
+                            break;
 
-                    case LightInfo.TYPE_LIGHTS:
-                        extras.set(message, flySession, callsign, LightInfo.class);
-                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
-                        break;
+                        case LightInfo.TYPE_LIGHTS:
+                            extras.set(msg, flySession, callsign, LightInfo.class);
+                            sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
+                            break;
 
-                    case ControlsInfo.TYPE_CONTROLS:
-                        extras.set(message, flySession, callsign, ControlsInfo.class);
-                        sessionHandler.sendToAllInFlySessionButOne(message, flySession, sessionId);
-                        break;
+                        case ControlsInfo.TYPE_CONTROLS:
+                            extras.set(msg, flySession, callsign, ControlsInfo.class);
+                            sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
+                            break;
 
-                    default:
-                        //IGNORE
-                        break;
+                        default:
+                            //IGNORE
+                            break;
+                    }
                 }
             }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

@@ -25,13 +25,14 @@ import nl.rakis.fs.LocationInfo;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import java.util.logging.Logger;
 
 /**
  * Aircraft subsidiary info.
  */
-@RequestScoped
+@ApplicationScoped
 public class Extras
 {
     private static final Logger log = Logger.getLogger(Extras.class.getName());
@@ -52,7 +53,7 @@ public class Extras
 
     public <T extends FSKeylessData> T get(String session, String callsign, Class<T> clazz)
     {
-        log.info("get(\"" + callsign + "\", \"" + session + "\", "+clazz.getCanonicalName()+")");
+        log.finest("get(\"" + callsign + "\", \"" + session + "\", "+clazz.getCanonicalName()+")");
         T result = null;
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -60,13 +61,14 @@ public class Extras
             try {
                 result = clazz.newInstance();
                 final String key = result.getKey(session, callsign);
-                log.info("get(): key=\"" + key + "\"");
 
                 final String value = cmd.get(key);
                 if (value != null) {
+                    log.finest("get(): key=\"" + key + "\", value=\"" + value + "\"");
                     result.parse(value);
                 }
                 else {
+                    log.finest("get(): key=\"" + key + "\", Not found");
                     result = null;
                 }
             } catch (Exception e) {
