@@ -19,17 +19,17 @@ public class ControlsInfo
 
     public static final String TYPE_CONTROLS = "Controls";
 
-    private int    rudderPos;
-    private int    elevatorPos;
-    private int    aileronPos;
-    private double rudderTrimPos;
-    private double elevatorTrimPos;
-    private double aileronTrimPos;
-    private int    spoilersPos;
-    private double flapsPos;
-    private int    gearsDown;
-    private int    parkingBrakePos;
-    private double doorPos;
+    private int rdr;
+    private int ele;
+    private int ail;
+    private double rdrtr;
+    private double eletr;
+    private double ailtr;
+    private int spl;
+    private double flp;
+    private int grs;
+    private int brk;
+    private double dr1;
 
     public ControlsInfo() {
         super(getType());
@@ -49,17 +49,17 @@ public class ControlsInfo
         Map<String,String> result = new HashMap<>();
 
         result.put(JsonFields.FIELD_TYPE, getType());
-        result.put(JsonFields.FIELD_RUDDER_POS, Integer.toString(getRudderPos()));
-        result.put(JsonFields.FIELD_RUDDER_TRIM_POS, Double.toString(getRudderTrimPos()));
-        result.put(JsonFields.FIELD_ELEVATOR_POS, Integer.toString(getElevatorPos()));
-        result.put(JsonFields.FIELD_ELEVATOR_TRIM_POS, Double.toString(getElevatorTrimPos()));
-        result.put(JsonFields.FIELD_AILERON_POS, Integer.toString(getAileronPos()));
-        result.put(JsonFields.FIELD_AILERON_TRIM_POS, Double.toString(getAileronTrimPos()));
-        result.put(JsonFields.FIELD_SPOILERS_POS, Integer.toString(getSpoilersPos()));
-        result.put(JsonFields.FIELD_FLAPS_POS, Double.toString(getFlapsPos()));
-        result.put(JsonFields.FIELD_GEARS_DOWN, Integer.toString(getGearsDown()));
-        result.put(JsonFields.FIELD_PARKING_BRAKE_POS, Integer.toString(getParkingBrakePos()));
-        result.put(JsonFields.FIELD_DOOR_POS, Double.toString(getDoorPos()));
+        result.put(JsonFields.FIELD_RUDDER_POS, Integer.toString(getRdr()));
+        result.put(JsonFields.FIELD_RUDDER_TRIM_POS, Double.toString(getRdrtr()));
+        result.put(JsonFields.FIELD_ELEVATOR_POS, Integer.toString(getEle()));
+        result.put(JsonFields.FIELD_ELEVATOR_TRIM_POS, Double.toString(getEletr()));
+        result.put(JsonFields.FIELD_AILERON_POS, Integer.toString(getAil()));
+        result.put(JsonFields.FIELD_AILERON_TRIM_POS, Double.toString(getAiltr()));
+        result.put(JsonFields.FIELD_SPOILERS_POS, Integer.toString(getSpl()));
+        result.put(JsonFields.FIELD_FLAPS_POS, Double.toString(getFlp()));
+        result.put(JsonFields.FIELD_GEARS_DOWN, Integer.toString(getGrs()));
+        result.put(JsonFields.FIELD_PARKING_BRAKE_POS, Integer.toString(getBrk()));
+        result.put(JsonFields.FIELD_DOOR_POS, Double.toString(getDr1()));
 
         return result;
     }
@@ -68,17 +68,17 @@ public class ControlsInfo
     public JsonObject toJsonObject() {
         return Json.createObjectBuilder()
                 .add(JsonFields.FIELD_TYPE, getType())
-                .add(JsonFields.FIELD_RUDDER_POS, getRudderPos())
-                .add(JsonFields.FIELD_RUDDER_TRIM_POS, getRudderTrimPos())
-                .add(JsonFields.FIELD_ELEVATOR_POS, getElevatorPos())
-                .add(JsonFields.FIELD_ELEVATOR_TRIM_POS, getElevatorTrimPos())
-                .add(JsonFields.FIELD_AILERON_POS, getAileronPos())
-                .add(JsonFields.FIELD_AILERON_TRIM_POS, getAileronTrimPos())
-                .add(JsonFields.FIELD_SPOILERS_POS, getSpoilersPos())
-                .add(JsonFields.FIELD_FLAPS_POS, getFlapsPos())
-                .add(JsonFields.FIELD_GEARS_DOWN, getGearsDown())
-                .add(JsonFields.FIELD_PARKING_BRAKE_POS, getParkingBrakePos())
-                .add(JsonFields.FIELD_DOOR_POS, getDoorPos())
+                .add(JsonFields.FIELD_RUDDER_POS, getRdr())
+                .add(JsonFields.FIELD_RUDDER_TRIM_POS, getRdrtr())
+                .add(JsonFields.FIELD_ELEVATOR_POS, getEle())
+                .add(JsonFields.FIELD_ELEVATOR_TRIM_POS, getEletr())
+                .add(JsonFields.FIELD_AILERON_POS, getAil())
+                .add(JsonFields.FIELD_AILERON_TRIM_POS, getAiltr())
+                .add(JsonFields.FIELD_SPOILERS_POS, getSpl())
+                .add(JsonFields.FIELD_FLAPS_POS, getFlp())
+                .add(JsonFields.FIELD_GEARS_DOWN, getGrs())
+                .add(JsonFields.FIELD_PARKING_BRAKE_POS, getBrk())
+                .add(JsonFields.FIELD_DOOR_POS, getDr1())
                 .build();
     }
 
@@ -88,17 +88,17 @@ public class ControlsInfo
         if (obj != null) {
             result = new ControlsInfo();
 
-            result.setRudderPos(obj.getInt(JsonFields.FIELD_RUDDER_POS));
-            result.setRudderTrimPos(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
-            result.setElevatorPos(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
-            result.setElevatorTrimPos(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
-            result.setAileronPos(obj.getInt(JsonFields.FIELD_AILERON_POS));
-            result.setAileronTrimPos(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
-            result.setSpoilersPos(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
-            result.setFlapsPos(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
-            result.setGearsDown(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
-            result.setParkingBrakePos(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
-            result.setDoorPos(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
+            result.setRdr(obj.getInt(JsonFields.FIELD_RUDDER_POS));
+            result.setRdrtr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
+            result.setEle(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
+            result.setEletr(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
+            result.setAil(obj.getInt(JsonFields.FIELD_AILERON_POS));
+            result.setAiltr(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
+            result.setSpl(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
+            result.setFlp(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
+            result.setGrs(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
+            result.setBrk(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
+            result.setDr1(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
         }
 
         return result;
@@ -122,106 +122,106 @@ public class ControlsInfo
                  JsonReader jr = Json.createReader(sr)) {
                 final JsonObject obj = jr.readObject();
 
-                setRudderPos(obj.getInt(JsonFields.FIELD_RUDDER_POS));
-                setRudderTrimPos(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
-                setElevatorPos(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
-                setElevatorTrimPos(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
-                setAileronPos(obj.getInt(JsonFields.FIELD_AILERON_POS));
-                setAileronTrimPos(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
-                setSpoilersPos(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
-                setFlapsPos(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
-                setGearsDown(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
-                setParkingBrakePos(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
-                setDoorPos(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
+                setRdr(obj.getInt(JsonFields.FIELD_RUDDER_POS));
+                setRdrtr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
+                setEle(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
+                setEletr(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
+                setAil(obj.getInt(JsonFields.FIELD_AILERON_POS));
+                setAiltr(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
+                setSpl(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
+                setFlp(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
+                setGrs(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
+                setBrk(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
+                setDr1(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
             }
         }
     }
 
-    public int getRudderPos() {
-        return rudderPos;
+    public int getRdr() {
+        return rdr;
     }
 
-    public void setRudderPos(int rudderPos) {
-        this.rudderPos = rudderPos;
+    public void setRdr(int rdr) {
+        this.rdr = rdr;
     }
 
-    public int getElevatorPos() {
-        return elevatorPos;
+    public int getEle() {
+        return ele;
     }
 
-    public void setElevatorPos(int elevatorPos) {
-        this.elevatorPos = elevatorPos;
+    public void setEle(int ele) {
+        this.ele = ele;
     }
 
-    public int getAileronPos() {
-        return aileronPos;
+    public int getAil() {
+        return ail;
     }
 
-    public void setAileronPos(int aileronPos) {
-        this.aileronPos = aileronPos;
+    public void setAil(int ail) {
+        this.ail = ail;
     }
 
-    public double getRudderTrimPos() {
-        return rudderTrimPos;
+    public double getRdrtr() {
+        return rdrtr;
     }
 
-    public void setRudderTrimPos(double rudderTrimPos) {
-        this.rudderTrimPos = rudderTrimPos;
+    public void setRdrtr(double rdrtr) {
+        this.rdrtr = rdrtr;
     }
 
-    public double getElevatorTrimPos() {
-        return elevatorTrimPos;
+    public double getEletr() {
+        return eletr;
     }
 
-    public void setElevatorTrimPos(double elevatorTrimPos) {
-        this.elevatorTrimPos = elevatorTrimPos;
+    public void setEletr(double eletr) {
+        this.eletr = eletr;
     }
 
-    public double getAileronTrimPos() {
-        return aileronTrimPos;
+    public double getAiltr() {
+        return ailtr;
     }
 
-    public void setAileronTrimPos(double aileronTrimPos) {
-        this.aileronTrimPos = aileronTrimPos;
+    public void setAiltr(double ailtr) {
+        this.ailtr = ailtr;
     }
 
-    public int getSpoilersPos() {
-        return spoilersPos;
+    public int getSpl() {
+        return spl;
     }
 
-    public void setSpoilersPos(int spoilersPos) {
-        this.spoilersPos = spoilersPos;
+    public void setSpl(int spl) {
+        this.spl = spl;
     }
 
-    public double getFlapsPos() {
-        return flapsPos;
+    public double getFlp() {
+        return flp;
     }
 
-    public void setFlapsPos(double flapsPos) {
-        this.flapsPos = flapsPos;
+    public void setFlp(double flp) {
+        this.flp = flp;
     }
 
-    public int getGearsDown() {
-        return gearsDown;
+    public int getGrs() {
+        return grs;
     }
 
-    public void setGearsDown(int gearsDown) {
-        this.gearsDown = gearsDown;
+    public void setGrs(int grs) {
+        this.grs = grs;
     }
 
-    public int getParkingBrakePos() {
-        return parkingBrakePos;
+    public int getBrk() {
+        return brk;
     }
 
-    public void setParkingBrakePos(int parkingBrakePos) {
-        this.parkingBrakePos = parkingBrakePos;
+    public void setBrk(int brk) {
+        this.brk = brk;
     }
 
-    public double getDoorPos() {
-        return doorPos;
+    public double getDr1() {
+        return dr1;
     }
 
-    public void setDoorPos(double doorPos) {
-        this.doorPos = doorPos;
+    public void setDr1(double dr1) {
+        this.dr1 = dr1;
     }
 }
