@@ -17,9 +17,7 @@
 package nl.rakis.fs.multiplayserver.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import nl.rakis.fs.SessionInfo;
-import nl.rakis.fs.UserInfo;
-import nl.rakis.fs.UserSessionInfo;
+import nl.rakis.fs.*;
 import nl.rakis.fs.db.*;
 import nl.rakis.fs.multiplayserver.ClientSessionHandler;
 import nl.rakis.fs.security.EncryptDecrypt;
@@ -31,10 +29,13 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 @Path("session")
 public class Session {
+
+    private static final Logger log = Logger.getLogger(Session.class.getName());
 
     @Inject
     private Sessions sessions;
@@ -43,7 +44,7 @@ public class Session {
     @Inject
     private nl.rakis.fs.db.Aircraft aircraft;
     @Inject
-    private Locations locations;
+    private Extras extras;
     @Inject
     private ClientSessionHandler sessionHandler;
 
@@ -68,6 +69,7 @@ public class Session {
     @Path("{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public SessionInfo get(@NotNull @PathParam("name") String name,
+                           @QueryParam("_expand") String expand,
                            @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
@@ -80,7 +82,22 @@ public class Session {
             throw new NotAuthorizedException(("Not your session"));
         }
 
-        return findSession(name);
+        SessionInfo result = findSession(name);
+
+        if ((expand != null) && !expand.isEmpty()) {
+            log.finest("get(): _expand=\"" + expand + "\"");
+            String[] fields=expand.split(",");
+            for (String field: fields) {
+                log.finest("get(): field=\"" + field + "\"");
+                switch (field) {
+                    case "aircraft":
+                        result.setAircraft(aircraft.listAllAircraftInSession(name));
+                        break;
+                }
+            }
+        }
+
+        return result;
     }
 
     @PUT
@@ -206,8 +223,13 @@ public class Session {
             final String callsign = EncryptDecrypt.getCallsign(token);
             final String flySession = EncryptDecrypt.getSession(token);
 
-            locations.removeLocation(callsign, flySession);
-            aircraft.removeAircraftFromSession(callsign, flySession);
+            extras.remove(flySession, callsign, LocationInfo.class);
+            extras.remove(flySession, callsign, LightInfo.class);
+            extras.remove(flySession, callsign, EngineInfo.class);
+            extras.remove(flySession, callsign, ControlsInfo.class);
+
+            aircraft.removeAircraftFromSession(flySession, callsign);
+
             sessionHandler.removeClient(userSessions.get(sessionId));
 
             userSessions.remove(sessionId);

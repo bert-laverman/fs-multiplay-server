@@ -118,4 +118,19 @@ public class Extras
         log.finest("remove(): Done");
     }
 
+    public <T extends FSKeylessData> void remove(String session, String callsign, Class<T> clazz) {
+        log.finest("remove(\"" + callsign + "\", \"" + session + "\")");
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            final T obj = clazz.newInstance();
+            final String key = obj.getKey(session, callsign);
+
+            cmd.del(key);
+        } catch (Exception e) {
+            log.severe(e.getLocalizedMessage());
+        }
+        log.finest("remove(): Done");
+    }
+
 }

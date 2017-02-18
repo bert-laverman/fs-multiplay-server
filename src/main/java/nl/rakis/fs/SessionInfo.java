@@ -37,9 +37,9 @@ public class SessionInfo
 
     private String name;
     private String description;
+    private List<String> aircraft = new ArrayList<>();
 
     public SessionInfo() {
-
     }
 
     public SessionInfo(String name, String description) {
@@ -110,6 +110,7 @@ public class SessionInfo
                 .add(JsonFields.FIELD_TYPE, getType())
                 .add(JsonFields.FIELD_NAME, getName())
                 .add(JsonFields.FIELD_DESCRIPTION, (description == null) ? "" : description)
+                .add(JsonFields.FIELD_AIRCRAFT, toArray(aircraft))
                 .build();
     }
 
@@ -168,4 +169,11 @@ public class SessionInfo
         this.description = description;
     }
 
+    public List<String> getAircraft() {
+        return aircraft;
+    }
+
+    public void setAircraft(List<String> aircraft) {
+        this.aircraft = aircraft;
+    }
 }

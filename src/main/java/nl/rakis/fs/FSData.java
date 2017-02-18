@@ -17,6 +17,7 @@
 package nl.rakis.fs;
 
 import javax.json.*;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -64,8 +65,21 @@ public abstract class FSData {
     public static JsonArray toArray(int[] arr) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
 
-        for (int i: arr) {
-            bld.add(i);
+        if (arr != null) {
+            for (int i : arr) {
+                bld.add(i);
+            }
+        }
+        return bld.build();
+    }
+
+    public static JsonArray toArray(List<String> list) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+
+        if (list != null) {
+            for (String s : list) {
+                bld.add(s);
+            }
         }
         return bld.build();
     }

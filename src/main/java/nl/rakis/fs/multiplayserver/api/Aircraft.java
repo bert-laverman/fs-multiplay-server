@@ -19,7 +19,6 @@ package nl.rakis.fs.multiplayserver.api;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import nl.rakis.fs.*;
 import nl.rakis.fs.db.Extras;
-import nl.rakis.fs.db.Locations;
 import nl.rakis.fs.db.UserSessions;
 import nl.rakis.fs.security.EncryptDecrypt;
 
@@ -44,8 +43,6 @@ public class Aircraft {
     private UserSessions userSessions;
     @Inject
     private nl.rakis.fs.db.Aircraft aircrafts;
-    @Inject
-    private Locations locations;
     @Inject
     private Extras extras;
 
@@ -195,8 +192,12 @@ public class Aircraft {
             throw new NotAuthorizedException("You can only remove your own aircraft!");
         }
 
-        locations.removeLocation(callsign, session);
-        aircrafts.removeAircraftFromSession(callsign, session);
+
+        extras.remove(session, callsign, LocationInfo.class);
+        extras.remove(session, callsign, LightInfo.class);
+        extras.remove(session, callsign, EngineInfo.class);
+        extras.remove(session, callsign, ControlsInfo.class);
+        aircrafts.removeAircraftFromSession(session, callsign);
 
         log.finest("delete(): Done");
     }

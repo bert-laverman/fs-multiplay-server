@@ -82,6 +82,49 @@ public class Aircraft {
         log.finest("setAircraftInSession(): Done");
     }
 
+    private static void harvestCallsigns(List<String> callsigns, List<String> keys) {
+        for (String key: keys) {
+            String[] keyElems = key.split(":");
+
+            if ((keyElems != null) && (keyElems.length == 3)) {
+                callsigns.add(keyElems [2]);
+            }
+        }
+    }
+
+    private List<String> listAllAircraftKeysInSession(String session) {
+        List<String> result = new ArrayList<>();
+        try (StatefulRedisConnection<String,String> connection = rc.connect()) {
+            RedisCommands<String,String> cmd = connection.sync();
+
+            final String match = AircraftInfo.getType() + ":" + session + ":*";
+            log.finest("listAllAircraftInSession(): Scanning for keys matching\"" + match + "\")");
+
+            ScanArgs sa = new ScanArgs();
+            sa.match(match);
+            sa.limit(1024);
+
+            KeyScanCursor<String> cursor = cmd.scan(sa);
+            result.addAll(cursor.getKeys());
+
+            while (!cursor.isFinished()) {
+                cursor = cmd.scan(cursor, sa);
+                result.addAll(cursor.getKeys());
+            }
+            log.finest("listAllAircraftInSession(): result=" + result);
+        }
+        return result;
+    }
+
+    public List<String> listAllAircraftInSession(String session) {
+        List<String> keys = listAllAircraftKeysInSession(session);
+        List<String> result = new ArrayList(keys.size());
+
+        harvestCallsigns(result, keys);
+
+        return result;
+    }
+
     public List<AircraftInfo> getAllAircraftInSession(String session) {
         log.finest("getAllAircraftInSession(\"" + session + "\")");
         List<AircraftInfo> result = new ArrayList<>();
@@ -92,18 +135,7 @@ public class Aircraft {
             final String match = AircraftInfo.getType() + ":" + session + ":*";
             log.finest("getAllAircraftInSession(): Scanning for keys matching\"" + match + "\")");
 
-            ScanArgs sa = new ScanArgs();
-            sa.match(match);
-            sa.limit(1024);
-            KeyScanCursor<String> cursor = cmd.scan(sa);
-            allKeys.addAll(cursor.getKeys());
-            while (!cursor.isFinished()) {
-                cursor = cmd.scan(cursor, sa);
-                allKeys.addAll(cursor.getKeys());
-            }
-            log.finest("getAircraftInSession(): " + allKeys.size() + " key(s) found");
-
-            for (String key: allKeys) {
+            for (String key: listAllAircraftKeysInSession(session)) {
                 String value = cmd.get(key);
                 if (value != null) {
                     result.add(AircraftInfo.fromString(value));
@@ -114,7 +146,7 @@ public class Aircraft {
         return result;
     }
 
-    public void removeAircraftFromSession(String callsign, String session) {
+    public void removeAircraftFromSession(String session, String callsign ) {
         log.finest("removeAircraftFromSession(\"" + callsign + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
