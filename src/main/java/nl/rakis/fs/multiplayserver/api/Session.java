@@ -117,21 +117,17 @@ public class Session {
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
         if (!userSession.getUsername().equalsIgnoreCase(UserInfo.ADMIN_USER)) {
-            throw new NotAuthorizedException("Only admin users can change session details");
+            throw new NotAuthorizedException("Only admin users can create or update sessions");
         }
         SessionInfo result = findSession(name);
-
-        if (result == null) {
-            throw new NotFoundException("No such session");
+        if (result == null) { // Create
+            result = session;
         }
-
-        result.setDescription(session.getDescription());
-        if (!result.getName().equalsIgnoreCase(session.getName())) {
-            // Be careful changing the name
-            if (findSession(session.getName()) != null) {
-                throw new ForbiddenException("Session with that name already exists");
+        else { // Update
+            result.setDescription(session.getDescription());
+            if (!result.getName().equalsIgnoreCase(session.getName())) {
+                throw new ForbiddenException("Create a new session if you want a different name");
             }
-            result.setName(session.getName());
         }
         final URI uri = uriInfo.getAbsolutePath();
         result.setHref(uri.toString());
