@@ -72,4 +72,5 @@ public class JsonFields {
     public static final String FIELD_PARKING_BRAKE_POS = "brk";
     public static final String FIELD_DOOR_POS = "dr1";
     public static final String FIELD_AIRCRAFT = "aircraft";
+    public static final String FIELD_HREF = "href";
 }

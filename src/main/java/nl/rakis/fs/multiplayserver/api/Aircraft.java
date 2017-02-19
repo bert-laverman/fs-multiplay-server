@@ -26,7 +26,8 @@ import javax.cache.annotation.CacheResult;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.*;
+import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -45,6 +46,9 @@ public class Aircraft {
     private nl.rakis.fs.db.Aircraft aircrafts;
     @Inject
     private Extras extras;
+
+    @Context
+    private UriInfo uriInfo;
 
     @CacheResult
     private AircraftInfo findAircraft(String callsign, String session) {
@@ -135,6 +139,9 @@ public class Aircraft {
 
         aircraft.setUsername(username);
         aircraft.setAtcId(callsign);
+        final URI uri = uriInfo.getAbsolutePath();
+        aircraft.setHref(uri.toString());
+
         aircrafts.setAircraftInSession(aircraft, session);
 
         log.finest("put(): Done");
@@ -143,8 +150,7 @@ public class Aircraft {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo post(AircraftInfo aircraft, @HeaderParam("authorization")String authHeader)
+    public Response post(AircraftInfo aircraft, @HeaderParam("authorization")String authHeader)
             throws WebApplicationException
     {
         log.finest("post(): aircraft=\"" + aircraft.toString() + "\"");
@@ -165,11 +171,31 @@ public class Aircraft {
             throw new BadRequestException("Aircraft already exists");
         }
 
+        final String callsign = aircraft.getAtcId();
         aircraft.setUsername(username);
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        uriBuilder.path(callsign);
+        final URI uri = uriBuilder.build();
+        aircraft.setHref(uri.toString());
+
         aircrafts.setAircraftInSession(aircraft, session);
 
+        if (aircraft.getLocation() != null) {
+            extras.set(aircraft.getLocation(), session, callsign);
+        }
+        if (aircraft.getEngines() != null) {
+            extras.set(aircraft.getEngines(), session, callsign);
+        }
+        if (aircraft.getLights() != null) {
+            extras.set(aircraft.getLights(), session, callsign);
+        }
+        if (aircraft.getControls() != null) {
+            extras.set(aircraft.getControls(), session, callsign);
+        }
+
         log.finest("post(): Done");
-        return aircraft;
+
+        return Response.created(uri).build();
     }
 
     @DELETE

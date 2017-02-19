@@ -28,6 +28,8 @@ public abstract class FSData {
 
     private static final Logger log = Logger.getLogger(FSData.class.getName());
 
+    private String href;
+
     /**
      * Add field to JsonObjectBuilder if not null, add as null otherwise
      * @param bld
@@ -117,4 +119,12 @@ public abstract class FSData {
      * @param jsonString the serialized JSON object
      */
     public abstract void parse(String jsonString);
+
+    public String getHref() {
+        return href;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
+    }
 }

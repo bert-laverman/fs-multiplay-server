@@ -27,7 +27,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.*;
+import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -47,6 +48,9 @@ public class Session {
     private Extras extras;
     @Inject
     private ClientSessionHandler sessionHandler;
+
+    @Context
+    private UriInfo uriInfo;
 
     @CacheResult
     private SessionInfo findSession(String name)
@@ -129,15 +133,16 @@ public class Session {
             }
             result.setName(session.getName());
         }
+        final URI uri = uriInfo.getAbsolutePath();
+        result.setHref(uri.toString());
         sessions.setSession(result);
 
         return result;
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public SessionInfo newSession(SessionInfo session,
-                                  @HeaderParam("authorization") String authHeader)
+    public Response newSession(SessionInfo session,
+                               @HeaderParam("authorization") String authHeader)
     {
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
@@ -152,10 +157,14 @@ public class Session {
         }
 
         SessionInfo result = new SessionInfo(session.getName(), session.getDescription());
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        uriBuilder.path(session.getName());
+        final URI uri = uriBuilder.build();
+        result.setHref(uri.toString());
 
         sessions.setSession(result);
 
-        return result;
+        return Response.created(uri).build();
     }
 
     @DELETE

@@ -122,7 +122,7 @@ public class Aircraft {
 
         harvestCallsigns(result, keys);
 
-        return result;
+        return (result.size() == 0) ? null : result;
     }
 
     public List<AircraftInfo> getAllAircraftInSession(String session) {
