@@ -52,7 +52,7 @@ public class Aircraft {
         rc = null;
     }
 
-    public AircraftInfo getAircraftInSession(String callsign, String session)
+    public AircraftInfo getAircraftInSession(String session, String callsign)
     {
         log.finest("getAircraftInSession(\"" + callsign + "\", \"" + session + "\")");
         AircraftInfo result = null;
@@ -69,7 +69,8 @@ public class Aircraft {
         return result;
     }
 
-    public void setAircraftInSession(AircraftInfo aircraft, String session) {
+    public void setAircraftInSession(String session, AircraftInfo aircraft)
+    {
         log.finest("setAircraftInSession(\"" + aircraft.getAtcId() + "\", \"" + session + "\")");
         try (StatefulRedisConnection<String,String> connection = rc.connect()) {
             RedisCommands<String,String> cmd = connection.sync();
@@ -82,7 +83,8 @@ public class Aircraft {
         log.finest("setAircraftInSession(): Done");
     }
 
-    private static void harvestCallsigns(List<String> callsigns, List<String> keys) {
+    private static void harvestCallsigns(List<String> callsigns, List<String> keys)
+    {
         for (String key: keys) {
             String[] keyElems = key.split(":");
 

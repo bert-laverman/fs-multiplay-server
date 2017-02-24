@@ -20,14 +20,14 @@ public class EngineInfo
 
     public static final String TYPE_ENGINES = "Engines";
 
-    private int[] engineOn;
-    private int[] throttle;
+    private int[] eng;
+    private int[] thrt;
 
     public EngineInfo() {
         super(getType());
 
-        engineOn = new int[4];
-        throttle = new int[4];
+        eng = new int[4];
+        thrt = new int[4];
     }
 
     @Override
@@ -43,8 +43,8 @@ public class EngineInfo
     public Map<String, String> toMap() {
         Map<String,String> result = new HashMap<>();
 
-        result.put(JsonFields.FIELD_ENGINE_ON, getEngineOn().toString());
-        result.put(JsonFields.FIELD_THROTTLE, getEngineOn().toString());
+        result.put(JsonFields.FIELD_ENGINE_ON, getEng().toString());
+        result.put(JsonFields.FIELD_THROTTLE, getEng().toString());
 
         return result;
     }
@@ -52,8 +52,8 @@ public class EngineInfo
     @Override
     public JsonObject toJsonObject() {
         return Json.createObjectBuilder()
-                .add(JsonFields.FIELD_ENGINE_ON, toArray(getEngineOn()))
-                .add(JsonFields.FIELD_THROTTLE, toArray(getThrottle()))
+                .add(JsonFields.FIELD_ENGINE_ON, toArray(getEng()))
+                .add(JsonFields.FIELD_THROTTLE, toArray(getThrt()))
                 .build();
     }
 
@@ -74,8 +74,8 @@ public class EngineInfo
         if (obj != null) {
             result = new EngineInfo();
 
-            result.setEngineOn(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
-            result.setThrottle(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
+            result.setEng(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
+            result.setThrt(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
         }
 
         return result;
@@ -99,25 +99,25 @@ public class EngineInfo
                  JsonReader jr = Json.createReader(sr)) {
                 final JsonObject obj = jr.readObject();
 
-                setEngineOn(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
-                setThrottle(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
+                setEng(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
+                setThrt(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
             }
         }
     }
 
-    public int[] getEngineOn() {
-        return engineOn;
+    public int[] getEng() {
+        return eng;
     }
 
-    public void setEngineOn(int[] engineOn) {
-        this.engineOn = engineOn;
+    public void setEng(int[] eng) {
+        this.eng = eng;
     }
 
-    public int[] getThrottle() {
-        return throttle;
+    public int[] getThrt() {
+        return thrt;
     }
 
-    public void setThrottle(int[] throttle) {
-        this.throttle = throttle;
+    public void setThrt(int[] thrt) {
+        this.thrt = thrt;
     }
 }

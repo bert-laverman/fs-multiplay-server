@@ -51,8 +51,8 @@ public class Aircraft {
     private UriInfo uriInfo;
 
     @CacheResult
-    private AircraftInfo findAircraft(String callsign, String session) {
-        return aircrafts.getAircraftInSession(callsign, session);
+    private AircraftInfo findAircraft(String session, String callsign) {
+        return aircrafts.getAircraftInSession(session, callsign);
     }
 
     @GET
@@ -82,7 +82,7 @@ public class Aircraft {
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
 
         final String session = userSession.getSession();
-        AircraftInfo result = findAircraft(callsign, session);
+        AircraftInfo result = findAircraft(session, callsign);
         if (result == null) {
             throw new NotFoundException("No such callsign");
         }
@@ -108,7 +108,7 @@ public class Aircraft {
                 }
             }
         }
-        log.finest("get(): Done");
+        log.finest("get(): Done, value=\"" + result.toString() + "\"");
         return result;
     }
 
@@ -116,9 +116,9 @@ public class Aircraft {
     @Path("{callsign}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo put(AircraftInfo aircraft,
-                            @PathParam("callsign") String callsign,
-                            @HeaderParam("authorization")String authHeader)
+    public Response put(AircraftInfo aircraft,
+                        @PathParam("callsign") String callsign,
+                        @HeaderParam("authorization")String authHeader)
             throws WebApplicationException
     {
         log.finest("put(): callsign=\"" + callsign + "\", aircraft=\"" + aircraft.toString() + "\"");
@@ -128,13 +128,12 @@ public class Aircraft {
 
         final String session = userSession.getSession();
         final String username = userSession.getUsername();
-        AircraftInfo current = findAircraft(aircraft.getAtcId(), session);
 
-        if (current == null) {
-            throw new NotFoundException("Cannot update non-existent aircraft");
-        }
-        if (!username.equalsIgnoreCase(current.getUsername()) && !username.equalsIgnoreCase(UserInfo.ADMIN_USER)) {
-            throw new NotAuthorizedException("You can only update your own aircraft");
+        AircraftInfo current = findAircraft(session, aircraft.getAtcId());
+        if (current != null) {
+            if (!username.equalsIgnoreCase(current.getUsername()) && !username.equalsIgnoreCase(UserInfo.ADMIN_USER)) {
+                throw new NotAuthorizedException("You can only update your own aircraft");
+            }
         }
 
         aircraft.setUsername(username);
@@ -142,10 +141,25 @@ public class Aircraft {
         final URI uri = uriInfo.getAbsolutePath();
         aircraft.setHref(uri.toString());
 
-        aircrafts.setAircraftInSession(aircraft, session);
+        aircrafts.setAircraftInSession(session, aircraft);
 
-        log.finest("put(): Done");
-        return aircraft;
+        if (aircraft.getLocation() != null) {
+            extras.set(aircraft.getLocation(), session, callsign);
+        }
+        if (aircraft.getEngines() != null) {
+            extras.set(aircraft.getEngines(), session, callsign);
+        }
+        if (aircraft.getLights() != null) {
+            extras.set(aircraft.getLights(), session, callsign);
+        }
+        if (aircraft.getControls() != null) {
+            extras.set(aircraft.getControls(), session, callsign);
+        }
+
+        return ((current == null) ? Response.created(uri) : Response.ok())
+                .entity(aircraft)
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @POST
@@ -167,7 +181,7 @@ public class Aircraft {
         if ((aircraft.getTitle() == null) || aircraft.getTitle().equals("")) {
             throw new BadRequestException("Aircraft must have a 'title'");
         }
-        if (findAircraft(aircraft.getAtcId(), session) != null) {
+        if (findAircraft(session, aircraft.getAtcId()) != null) {
             throw new BadRequestException("Aircraft already exists");
         }
 
@@ -178,7 +192,7 @@ public class Aircraft {
         final URI uri = uriBuilder.build();
         aircraft.setHref(uri.toString());
 
-        aircrafts.setAircraftInSession(aircraft, session);
+        aircrafts.setAircraftInSession(session, aircraft);
 
         if (aircraft.getLocation() != null) {
             extras.set(aircraft.getLocation(), session, callsign);
@@ -200,9 +214,9 @@ public class Aircraft {
 
     @DELETE
     @Path("{callsign}")
-    public void delete(@PathParam("callsign") String callsign, @HeaderParam("authorization")String authHeader)
+    public Response delete(@PathParam("callsign") String callsign, @HeaderParam("authorization")String authHeader)
     {
-        log.finest("delete(): callsign=\"" + callsign + "\"");
+        log.info("delete(): callsign=\"" + callsign + "\"");
         DecodedJWT token = EncryptDecrypt.decodeToken(authHeader);
         EncryptDecrypt.verifyToken(token);
         UserSessionInfo userSession = userSessions.get(EncryptDecrypt.getSessionId(token));
@@ -210,7 +224,7 @@ public class Aircraft {
         final String session = userSession.getSession();
         final String username = userSession.getUsername();
 
-        AircraftInfo current = findAircraft(callsign, session);
+        AircraftInfo current = findAircraft(session, callsign);
         if (current == null) {
             throw new NotFoundException("No such callsign");
         }
@@ -218,13 +232,18 @@ public class Aircraft {
             throw new NotAuthorizedException("You can only remove your own aircraft!");
         }
 
-
-        extras.remove(session, callsign, LocationInfo.class);
-        extras.remove(session, callsign, LightInfo.class);
-        extras.remove(session, callsign, EngineInfo.class);
-        extras.remove(session, callsign, ControlsInfo.class);
-        aircrafts.removeAircraftFromSession(session, callsign);
-
+        try {
+            extras.remove(session, callsign, LocationInfo.class);
+            extras.remove(session, callsign, LightInfo.class);
+            extras.remove(session, callsign, EngineInfo.class);
+            extras.remove(session, callsign, ControlsInfo.class);
+            aircrafts.removeAircraftFromSession(session, callsign);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
         log.finest("delete(): Done");
+        return Response.noContent().build();
     }
 }

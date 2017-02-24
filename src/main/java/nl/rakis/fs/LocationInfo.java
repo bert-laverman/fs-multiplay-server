@@ -16,16 +16,23 @@
  */
 package nl.rakis.fs;
 
+import nl.rakis.fs.multiplayserver.api.Aircraft;
+
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class LocationInfo
     extends FSKeylessData
 {
+
+    private static final Logger log = Logger.getLogger(LocationInfo.class.getName());
+
     public static final String LOCATION_TYPE = "Location";
 
     private String callsign;
@@ -71,9 +78,8 @@ public class LocationInfo
 
     @Override
     public JsonObject toJsonObject() {
-        return Json.createObjectBuilder()
+        JsonObjectBuilder bld = Json.createObjectBuilder()
                 .add(JsonFields.FIELD_TYPE, getType())
-                .add(JsonFields.FIELD_CALLSIGN, getCallsign())
                 .add(JsonFields.FIELD_LATITUDE, getLatitude())
                 .add(JsonFields.FIELD_LONGITUDE, getLongitude())
                 .add(JsonFields.FIELD_ALTITUDE, getAltitude())
@@ -81,8 +87,11 @@ public class LocationInfo
                 .add(JsonFields.FIELD_BANK, getBank())
                 .add(JsonFields.FIELD_HEADING, getHeading())
                 .add(JsonFields.FIELD_ON_GROUND, isOnGround())
-                .add(JsonFields.FIELD_AIRSPEED, getAirspeed())
-                .build();
+                .add(JsonFields.FIELD_AIRSPEED, getAirspeed());
+        if (getCallsign() != null) {
+            bld.add(JsonFields.FIELD_CALLSIGN, getCallsign());
+        }
+        return bld.build();
     }
 
     @Override
@@ -140,12 +149,15 @@ public class LocationInfo
     }
 
     public void parse(String json) {
+        log.finest("parse(): \"" + json + "\"");
+
         if (json != null) {
             try (StringReader sr = new StringReader(json);
                  JsonReader jr = Json.createReader(sr)) {
                 final JsonObject obj = jr.readObject();
+                log.finest("parse(): JsonReader.readObject() returned \"" + obj.toString() + "\"");
 
-                if (!obj.isNull(JsonFields.FIELD_CALLSIGN)) {
+                if (obj.containsKey(JsonFields.FIELD_CALLSIGN) && !obj.isNull(JsonFields.FIELD_CALLSIGN)) {
                     setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN));
                 }
                 if (obj.containsKey(JsonFields.FIELD_LATITUDE) && !obj.isNull(JsonFields.FIELD_LATITUDE)) {
@@ -174,6 +186,7 @@ public class LocationInfo
                 }
             }
         }
+        log.finest("parse(): result is \"" + toString() + "\"");
     }
 
     public String getCallsign() {

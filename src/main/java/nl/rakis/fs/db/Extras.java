@@ -85,8 +85,10 @@ public class Extras
             RedisCommands<String,String> cmd = connection.sync();
 
             final String key = obj.getKey(session, callsign);
+            final String value = obj.toString();
 
-            cmd.set(key, obj.toString());
+            log.finest("set(): key=\"" + key + "\", value=\"" + value + "\"");
+            cmd.set(key, value);
         }
         log.finest("set(): Done");
     }

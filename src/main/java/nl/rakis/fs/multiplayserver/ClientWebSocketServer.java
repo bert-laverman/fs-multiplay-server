@@ -64,7 +64,13 @@ public class ClientWebSocketServer {
     @OnClose
     public void close(Session session)
     {
+        log.info("close(): closing");
         sessionHandler.removeWSSession(session);
+        try {
+            session.close(new CloseReason(CloseCodes.NO_STATUS_CODE, "Ok"));
+        } catch (IOException e) {
+            log.severe(e.getLocalizedMessage());
+        }
     }
 
     @OnError
@@ -74,7 +80,7 @@ public class ClientWebSocketServer {
     }
 
     private void forceCloseSession(Session session, CloseCodes code, String reason) {
-        close(session);
+        sessionHandler.removeWSSession(session);
         try {
             session.close(new CloseReason(code, reason));
         } catch (IOException e) {
@@ -134,31 +140,37 @@ public class ClientWebSocketServer {
                             break;
 
                         case AircraftInfo.AIRCRAFT_TYPE:
+                            log.finest("message(): Aircraft msg=\"" + msg + "\"");
                             sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
                                     flySession, sessionId);
                             break;
 
                         case LocationInfo.LOCATION_TYPE:
+                            log.finest("Location message(): msg=\"" + msg + "\"");
                             extras.set(msg, flySession, callsign, LocationInfo.class);
                             sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
                             break;
 
                         case EngineInfo.TYPE_ENGINES:
+                            log.finest("Engines message(): msg=\"" + msg + "\"");
                             extras.set(msg, flySession, callsign, EngineInfo.class);
                             sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
                             break;
 
                         case LightInfo.TYPE_LIGHTS:
+                            log.finest("Lights message(): msg=\"" + msg + "\"");
                             extras.set(msg, flySession, callsign, LightInfo.class);
                             sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
                             break;
 
                         case ControlsInfo.TYPE_CONTROLS:
+                            log.finest("Controls message(): msg=\"" + msg + "\"");
                             extras.set(msg, flySession, callsign, ControlsInfo.class);
                             sessionHandler.sendToAllInFlySessionButOne(msg, flySession, sessionId);
                             break;
 
                         default:
+                            log.warning("Unknown message(): msg=\"" + msg + "\"");
                             //IGNORE
                             break;
                     }
