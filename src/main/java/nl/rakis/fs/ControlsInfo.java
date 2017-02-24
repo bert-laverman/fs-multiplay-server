@@ -19,16 +19,16 @@ public class ControlsInfo
 
     public static final String TYPE_CONTROLS = "Controls";
 
-    private int rdr;
-    private int ele;
-    private int ail;
+    private double rdr;
+    private double ele;
+    private double ail;
     private double rdrtr;
     private double eletr;
     private double ailtr;
-    private int spl;
+    private double spl;
     private double flp;
     private int grs;
-    private int brk;
+    private double brk;
     private double dr1;
 
     public ControlsInfo() {
@@ -49,16 +49,16 @@ public class ControlsInfo
         Map<String,String> result = new HashMap<>();
 
         result.put(JsonFields.FIELD_TYPE, getType());
-        result.put(JsonFields.FIELD_RUDDER_POS, Integer.toString(getRdr()));
+        result.put(JsonFields.FIELD_RUDDER_POS, Double.toString(getRdr()));
         result.put(JsonFields.FIELD_RUDDER_TRIM_POS, Double.toString(getRdrtr()));
-        result.put(JsonFields.FIELD_ELEVATOR_POS, Integer.toString(getEle()));
+        result.put(JsonFields.FIELD_ELEVATOR_POS, Double.toString(getEle()));
         result.put(JsonFields.FIELD_ELEVATOR_TRIM_POS, Double.toString(getEletr()));
-        result.put(JsonFields.FIELD_AILERON_POS, Integer.toString(getAil()));
+        result.put(JsonFields.FIELD_AILERON_POS, Double.toString(getAil()));
         result.put(JsonFields.FIELD_AILERON_TRIM_POS, Double.toString(getAiltr()));
-        result.put(JsonFields.FIELD_SPOILERS_POS, Integer.toString(getSpl()));
+        result.put(JsonFields.FIELD_SPOILERS_POS, Double.toString(getSpl()));
         result.put(JsonFields.FIELD_FLAPS_POS, Double.toString(getFlp()));
         result.put(JsonFields.FIELD_GEARS_DOWN, Integer.toString(getGrs()));
-        result.put(JsonFields.FIELD_PARKING_BRAKE_POS, Integer.toString(getBrk()));
+        result.put(JsonFields.FIELD_PARKING_BRAKE_POS, Double.toString(getBrk()));
         result.put(JsonFields.FIELD_DOOR_POS, Double.toString(getDr1()));
 
         return result;
@@ -88,16 +88,16 @@ public class ControlsInfo
         if (obj != null) {
             result = new ControlsInfo();
 
-            result.setRdr(obj.getInt(JsonFields.FIELD_RUDDER_POS));
+            result.setRdr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_POS).doubleValue());
             result.setRdrtr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
-            result.setEle(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
+            result.setEle(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_POS).doubleValue());
             result.setEletr(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
-            result.setAil(obj.getInt(JsonFields.FIELD_AILERON_POS));
+            result.setAil(obj.getJsonNumber(JsonFields.FIELD_AILERON_POS).doubleValue());
             result.setAiltr(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
-            result.setSpl(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
+            result.setSpl(obj.getJsonNumber(JsonFields.FIELD_SPOILERS_POS).doubleValue());
             result.setFlp(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
             result.setGrs(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
-            result.setBrk(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
+            result.setBrk(obj.getJsonNumber(JsonFields.FIELD_PARKING_BRAKE_POS).doubleValue());
             result.setDr1(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
         }
 
@@ -122,42 +122,42 @@ public class ControlsInfo
                  JsonReader jr = Json.createReader(sr)) {
                 final JsonObject obj = jr.readObject();
 
-                setRdr(obj.getInt(JsonFields.FIELD_RUDDER_POS));
+                setRdr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_POS).doubleValue());
                 setRdrtr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
-                setEle(obj.getInt(JsonFields.FIELD_ELEVATOR_POS));
+                setEle(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_POS).doubleValue());
                 setEletr(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
-                setAil(obj.getInt(JsonFields.FIELD_AILERON_POS));
+                setAil(obj.getJsonNumber(JsonFields.FIELD_AILERON_POS).doubleValue());
                 setAiltr(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
-                setSpl(obj.getInt(JsonFields.FIELD_SPOILERS_POS));
+                setSpl(obj.getJsonNumber(JsonFields.FIELD_SPOILERS_POS).doubleValue());
                 setFlp(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
                 setGrs(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
-                setBrk(obj.getInt(JsonFields.FIELD_PARKING_BRAKE_POS));
+                setBrk(obj.getJsonNumber(JsonFields.FIELD_PARKING_BRAKE_POS).doubleValue());
                 setDr1(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
             }
         }
     }
 
-    public int getRdr() {
+    public double getRdr() {
         return rdr;
     }
 
-    public void setRdr(int rdr) {
+    public void setRdr(double rdr) {
         this.rdr = rdr;
     }
 
-    public int getEle() {
+    public double getEle() {
         return ele;
     }
 
-    public void setEle(int ele) {
+    public void setEle(double ele) {
         this.ele = ele;
     }
 
-    public int getAil() {
+    public double getAil() {
         return ail;
     }
 
-    public void setAil(int ail) {
+    public void setAil(double ail) {
         this.ail = ail;
     }
 
@@ -185,11 +185,11 @@ public class ControlsInfo
         this.ailtr = ailtr;
     }
 
-    public int getSpl() {
+    public double getSpl() {
         return spl;
     }
 
-    public void setSpl(int spl) {
+    public void setSpl(double spl) {
         this.spl = spl;
     }
 
@@ -209,11 +209,11 @@ public class ControlsInfo
         this.grs = grs;
     }
 
-    public int getBrk() {
+    public double getBrk() {
         return brk;
     }
 
-    public void setBrk(int brk) {
+    public void setBrk(double brk) {
         this.brk = brk;
     }
 
