@@ -66,6 +66,7 @@ public class ClientWebSocketServer {
     {
         log.info("close(): closing");
         sessionHandler.removeWSSession(session);
+        sessionHandler.removeClient((UserSessionInfo) session.getUserProperties().get(USER_SESSION));
         try {
             session.close(new CloseReason(CloseCodes.NO_STATUS_CODE, "Ok"));
         } catch (IOException e) {
@@ -133,14 +134,16 @@ public class ClientWebSocketServer {
                     final String callsign = userSession.getCallsign();
 
                     switch (type) {
-                        case "add":
-                            //FALLTHROUGH
-                        case "remove":
+                        case "add": // Nobody should send this, it follows from the "hello"
+                            //IGNORE
+                            break;
+
+                        case "remove": // This follows from closing
                             //IGNORE
                             break;
 
                         case AircraftInfo.AIRCRAFT_TYPE:
-                            log.finest("message(): Aircraft msg=\"" + msg + "\"");
+                            log.info("message(): Aircraft msg=\"" + msg + "\"");
                             sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
                                     flySession, sessionId);
                             break;
