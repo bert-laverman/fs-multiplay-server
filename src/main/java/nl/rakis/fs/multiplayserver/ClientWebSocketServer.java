@@ -144,7 +144,7 @@ public class ClientWebSocketServer {
 
                         case AircraftInfo.AIRCRAFT_TYPE:
                             log.info("message(): Aircraft msg=\"" + msg + "\"");
-                            sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createReloadMessage(userSession),
+                            sessionHandler.sendToAllInFlySessionButOne(sessionHandler.createAircraft(userSession),
                                     flySession, sessionId);
                             break;
 

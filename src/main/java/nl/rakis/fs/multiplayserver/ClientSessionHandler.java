@@ -16,6 +16,7 @@
  */
 package nl.rakis.fs.multiplayserver;
 
+import nl.rakis.fs.AircraftInfo;
 import nl.rakis.fs.UserSessionInfo;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -98,9 +99,10 @@ public class ClientSessionHandler {
                 .build().toString();
     }
 
-    public String createReloadMessage(UserSessionInfo userSession) {
+    public String createAircraft(UserSessionInfo userSession) {
         return Json.createObjectBuilder()
-                .add("type", "reload")
+                .add("type", AircraftInfo.AIRCRAFT_TYPE)
+                .add("session", userSession.getSession())
                 .add("callsign", userSession.getCallsign())
                 .build().toString();
     }
