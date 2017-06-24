@@ -1,0 +1,1 @@
+FROM payara/microprofile
