@@ -28,22 +28,27 @@ import java.net.URISyntaxException;
 /**
  * The REST API for Authentication
  */
-@Path("/")
+@Path("/token")
 @RequestScoped
 public class Authenticate {
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response checkMe(JsonObject obj, @QueryParam("redirect_to") String redir) {
-        URI uri;
-        try {
-            uri = new URI(redir);
-        } catch (URISyntaxException e) {
-            throw new BadRequestException("Bad redirect URI");
-        }
-        Response bld = Response.temporaryRedirect(uri).build();
+    public static class TokenResult {
+        public String access_token;
+        public String scope;
+        public String token_type;
+    }
 
-        return bld;
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public TokenResult checkMe(@FormParam("grant_type") String grantType,
+                               @FormParam("scope") String scope,
+                               @HeaderParam("Authorization") String auth)
+    {
+        TokenResult result = new TokenResult();
+
+        BasicAuth ba = BasicAuthUtil.decodeAuthorizationHeader(auth);
+
+        return result;
     }
 }

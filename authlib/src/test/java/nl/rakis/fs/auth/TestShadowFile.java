@@ -1,34 +1,43 @@
 package nl.rakis.fs.auth;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 
-public class TestPasswordFile
+public class TestShadowFile
 {
 
-    PasswordFile pw;
+    private static Logger log = LogManager.getLogger(TestShadowFile.class);
+
+    ShadowFile shadow;
 
     @Before
     public void setup()
     {
-        String pathName = new File(getClass().getResource("passwd").getFile()).getAbsolutePath();
-        System.err.println("pathName = \"" + pathName + "\"");
-        pw = new PasswordFile(pathName);
+        String pathName = new File(getClass().getResource("shadow").getFile()).getAbsolutePath();
+        log.debug("pathName = \"" + pathName + "\"");
+        shadow = new ShadowFile(pathName);
     }
 
     @Test
-    public void testGetUser()
+    public void testGetPassword()
     {
-        Assert.assertEquals("Reading passwd file", 1, pw.getUsers().size());
+        Assert.assertEquals("Reading shadow file", 1, shadow.getPasswords().size());
 
-        User user = pw.getUser("testUser");
+        final String user = "testUser";
+        String pwd = shadow.getPassword(user);
 
-        Assert.assertNotNull("Reading user from passwd", user.userName);
-        Assert.assertEquals("Reading userName from passwd", "testUser", user.userName);
-        Assert.assertEquals("Reading longName from passwd", "Test User", user.longName);
-        Assert.assertEquals("Reading defaultSession from passwd", "Test Session", user.defaultSession);
+        Assert.assertNotNull("Reading password from shadow", pwd);
+        try {
+            PasswordStorage.verifyPassword("password", pwd);
+        } catch (PasswordStorage.CannotPerformOperationException e) {
+            Assert.fail("Failed to create hash");
+        } catch (PasswordStorage.InvalidHashException e) {
+            Assert.fail("Test hash did not match");
+        }
     }
 }

@@ -1,7 +1,17 @@
 package nl.rakis.fs.auth;
 
 /**
- * Created by bertl on 6/25/2017.
+ * Basic Authentication
  */
 public class BasicAuth {
+    public String username;
+    public String password;
+
+    public BasicAuth() {
+    }
+
+    public BasicAuth(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }

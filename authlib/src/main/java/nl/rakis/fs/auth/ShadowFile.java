@@ -19,57 +19,37 @@ package nl.rakis.fs.auth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PasswordFile {
+public class ShadowFile extends SecurityFile {
 
-    private static final Logger log = LogManager.getLogger(PasswordFile.class);
+    private static final Logger log = LogManager.getLogger(ShadowFile.class);
 
-    public static final int NUM_FIELDS = 7;
+    public static final int NUM_FIELDS = 2;
     public static final String FLDNAME_USERNAME = "Username";
     public static final int FLD_USERNAME = 0;
     public static final String FLDNAME_PASSWORD = "Password";
     public static final int FLD_PASSWORD = 1;
-    public static final String FLDNAME_USERID = "User ID";
-    public static final int FLD_USERID = 2;
-    public static final String FLDNAME_GROUPID = "Group ID";
-    public static final int FLD_GROUPID = 3;
-    public static final String FLDNAME_REALNAME = "Real name";
-    public static final int FLD_REALNAME = 4;
-    public static final String FLDNAME_HOME = "Home directory";
-    public static final int FLD_HOME = 5;
-    public static final String FLDNAME_SHELL = "Shell";
-    public static final int FLD_SHELL = 6;
 
     private String path;
-    private HashMap<String,User> users = new HashMap<>();
+    private HashMap<String,String> passwords = new HashMap<>();
 
-    public PasswordFile(String path)
+    public ShadowFile(String path)
     {
-        log.debug("PasswordFile(\"" + path + "\")");
+        log.debug("ShadowFile(\"" + path + "\")");
 
         this.path = path;
-    }
-
-    private void checkEmpty(String fldName, String fld) throws IOException {
-        if ((fld != null) && (fld.length() > 0) && !fld.equals("x") && !fld.equals("*")) {
-            throw new IOException(fldName + " should be empty: \"" + fld + "\"");
-        }
-    }
-
-    private void checkNonEmpty(String fldName, String fld) throws IOException {
-        if ((fld == null) || (fld.length() == 0)) {
-            throw new IOException(fldName + " should not be empty: \"" + fld + "\"");
-        }
     }
 
     private void load()
     {
         log.trace("load()");
 
-        if (users.size() == 0) {
+        if (passwords.size() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("load(): Reading \"" + path + "\"");
             }
@@ -85,48 +65,40 @@ public class PasswordFile {
                             log.trace("load(): Read \"" + line + "\"");
                         }
 
-                        String[] pwdFields = line.split(":");
-                        if ((pwdFields == null) || (pwdFields.length != NUM_FIELDS))
-                        {
+                        int pos = line.indexOf(':');
+                        if ((pos <= 0) || (pos == line.length()-1)) {
                             throw new IOException("Bad passwd format: \"" + line + "\"");
                         }
-                        User user = new User();
 
-                        checkNonEmpty(FLDNAME_USERNAME, pwdFields [FLD_USERNAME]);
-                        user.userName = pwdFields [FLD_USERNAME];
-                        checkEmpty(FLDNAME_PASSWORD, pwdFields [FLD_PASSWORD]);
-                        checkEmpty(FLDNAME_USERID, pwdFields [FLD_USERID]);
-                        checkEmpty(FLDNAME_GROUPID, pwdFields [FLD_GROUPID]);
-                        checkNonEmpty(FLDNAME_REALNAME, pwdFields [FLD_REALNAME]);
-                        user.longName = pwdFields [FLD_REALNAME];
-                        checkNonEmpty(FLDNAME_HOME, pwdFields [FLD_HOME]);
-                        user.defaultSession = pwdFields [FLD_HOME];
-                        checkEmpty(FLDNAME_SHELL, pwdFields [FLD_SHELL]);
+                        final String user = line.substring(0, pos);
+                        checkNonEmpty(FLDNAME_USERNAME, user);
+                        final String pwd = line.substring(pos+1);
+                        checkNonEmpty(FLDNAME_PASSWORD, pwd);
 
                         if (log.isDebugEnabled()) {
-                            log.debug("load(): Adding user \"" + user.userName + "\"");
+                            log.debug("load(): Adding password for user \"" + user + "\"");
                         }
-                        users.put(user.userName, user);
+                        passwords.put(user, pwd);
                     }
                 }
             }
             catch (IOException e) {
-                users.clear();
+                passwords.clear();
 
                 log.error("load(): Failed to load \"" + path + "\"", e);
             }
             if (log.isDebugEnabled()) {
-                log.debug("load(): " + users.size() + " user(s) read");
+                log.debug("load(): " + passwords.size() + " password(s) read");
             }
         }
     }
 
-    public Map<String,User> getUsers() {
+    public Map<String,String> getPasswords() {
         load();
-        return users;
+        return passwords;
     }
 
-    public User getUser(String userId) {
-        return getUsers().containsKey(userId) ? users.get(userId) : null;
+    public String getPassword(String userId) {
+        return getPasswords().containsKey(userId) ? passwords.get(userId) : null;
     }
 }

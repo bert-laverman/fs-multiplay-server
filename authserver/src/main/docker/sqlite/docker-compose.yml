@@ -1,0 +1,8 @@
+version: '2'
+services:
+  sqlite:
+    build: .
+    ports:
+      - "12345:12345"
+    volumes:
+      - /data/fs-server/authdb:/data/fs-server/authdb
