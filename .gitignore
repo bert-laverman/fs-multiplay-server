@@ -15,3 +15,12 @@ hs_err_pid*
 /target/
 authserver/target/
 authlib/target/
+.classpath
+.project
+.gradle/
+.settings/
+authlib/.vscode/
+authserver/bin/
+authlib/build/
+authlib/bin/
+build/

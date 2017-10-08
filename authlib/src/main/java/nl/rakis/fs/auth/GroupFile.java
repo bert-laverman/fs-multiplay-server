@@ -3,9 +3,7 @@ package nl.rakis.fs.auth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class GroupFile extends SecurityFile {
@@ -22,7 +20,7 @@ public class GroupFile extends SecurityFile {
     public static final String FLDNAME_USERS = "Users";
     public static final int FLD_USERS = 3;
 
-    private String path;
+    private File path;
     private Map<String,Set<String>> groups = new HashMap<>();
     private Map<String,Set<String>> users = new HashMap<>();
 
@@ -30,85 +28,103 @@ public class GroupFile extends SecurityFile {
     {
         log.debug("GroupFile(\"" + path + "\")");
 
+        this.path = new File(path);
+    }
+
+    public GroupFile(File path)
+    {
+        log.debug("GroupFile(\"" + path.getAbsolutePath() + "\")");
+
         this.path = path;
     }
 
-    private void load()
-    {
-        log.trace("load()");
+    private void load() {
+        if (log.isDebugEnabled()) {
+            log.debug("load()");
+        }
 
-        if (groups.size() == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("load(): Reading \"" + path + "\"");
-            }
+        load(path, (String line) -> {
+            boolean result = false;
+
             try {
-                try (FileReader fr = new FileReader(path);
-                     BufferedReader br=new BufferedReader(fr))
+                String[] grpFields = line.split(":");
+                if ((grpFields == null) || (grpFields.length != NUM_FIELDS))
                 {
-                    if (log.isTraceEnabled()) {
-                        log.trace("load(): Userlist \"" + path + "\" opened");
-                    }
-                    for (String line = br.readLine(); line != null; line = br.readLine()) {
-                        if (log.isTraceEnabled()) {
-                            log.trace("load(): Read \"" + line + "\"");
-                        }
-
-                        String[] grpFields = line.split(":");
-                        if ((grpFields == null) || (grpFields.length != NUM_FIELDS))
-                        {
-                            throw new IOException("Bad group format: \"" + line + "\"");
-                        }
-
-                        checkNonEmpty(FLDNAME_GROUPNAME, grpFields [FLD_USERNAME]);
-                        String group = grpFields [FLD_USERNAME];
-                        checkEmpty(FLDNAME_PASSWORD, grpFields [FLD_PASSWORD]);
-                        checkEmpty(FLDNAME_GROUPID, grpFields [FLD_GROUPID]);
-                        checkNonEmpty(FLDNAME_USERS, grpFields [FLD_USERS]);
-
-                        String[] users = grpFields [FLD_USERS].split(",");
-                        final HashSet userSet = new HashSet(Arrays.asList(users));
-
-                        if (log.isDebugEnabled()) {
-                            log.debug("load(): Adding group \"" + group + "\" with users " + userSet);
-                        }
-                        groups.put(group, userSet);
-                    }
+                    throw new IOException("Bad group format: \"" + line + "\"");
                 }
+
+                checkNonEmpty(FLDNAME_GROUPNAME, grpFields [FLD_USERNAME]);
+                String group = grpFields [FLD_USERNAME];
+                checkEmpty(FLDNAME_PASSWORD, grpFields [FLD_PASSWORD]);
+                checkEmpty(FLDNAME_GROUPID, grpFields [FLD_GROUPID]);
+                checkNonEmpty(FLDNAME_USERS, grpFields [FLD_USERS]);
+
+                String[] users = grpFields [FLD_USERS].split(",");
+                final HashSet<String> userSet = new HashSet<>(Arrays.asList(users));
+
+                if (log.isDebugEnabled()) {
+                    log.debug("load(): Adding group \"" + group + "\" with users " + userSet);
+                }
+                groups.put(group, userSet);
             }
             catch (IOException e) {
+                log.error("load(): Exception while loading \"" + path + "\"", e);
+                result = true;
                 groups.clear();
-
-                log.error("load(): Failed to load \"" + path + "\"", e);
             }
-            if (log.isDebugEnabled()) {
-                log.debug("load(): " + groups.size() + " group(s) read");
-            }
+            return result;
+        });
+        if (log.isDebugEnabled()) {
+            log.debug("load(): " + groups.size() + " group(s) read");
+        }
 
-            // Create reverse mapping
-            for (String group: groups.keySet()) {
-                Set<String> usersList = groups.get(group);
+        // Create reverse mapping
+        for (String group: groups.keySet()) {
+            Set<String> usersList = groups.get(group);
 
-                if (users != null) {
-                    for (String user: usersList) {
-                        if (users.containsKey(user)) {
-                            users.get(user).add(group);
-                        }
-                        else {
-                            Set<String> groupsOfUser = new HashSet<>();
-                            groupsOfUser.add(group);
-                            users.put(user, groupsOfUser);
-                        }
+            if (users != null) {
+                for (String user: usersList) {
+                    if (users.containsKey(user)) {
+                        users.get(user).add(group);
+                    }
+                    else {
+                        Set<String> groupsOfUser = new HashSet<>();
+                        groupsOfUser.add(group);
+                        users.put(user, groupsOfUser);
                     }
                 }
             }
-            if (log.isDebugEnabled()) {
-                log.debug("load(): " + users.size() + " users(s) mapped to groups");
-            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("load(): " + users.size() + " users(s) mapped to groups");
         }
     }
 
+    private boolean store() {
+        return store("groups", path, (PrintWriter pr) -> {
+            for (String groupName: groups.keySet()) {
+                Set<String> users = groups.get(groupName);
+                pr.print(groupName);
+                pr.print(":x:x:");
+                boolean first = true;
+                for (String userName: users) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        pr.print(",");
+                    }
+                    pr.print(userName);
+                }
+                pr.println();
+            }
+        });
+    }
+
     public Map<String,Set<String>> getGroups() {
-        load();
+        if (groups.size() == 0) {
+            load();
+        }
         return groups;
     }
 
@@ -117,7 +133,9 @@ public class GroupFile extends SecurityFile {
     }
 
     public Map<String,Set<String>> getUsers() {
-        load();
+        if (users.size() == 0) {
+            load();
+        }
         return users;
     }
 
@@ -128,4 +146,57 @@ public class GroupFile extends SecurityFile {
     public boolean isUserInGroup(String user, String group) {
         return getUsersInGroup(group).contains(user);
     }
+
+    public boolean addUserToGroup(String userName, String groupName) {
+        if (log.isInfoEnabled()) {
+            log.info("addUserToGroup(): Adding user \"" + userName + "\" to group \"" + groupName + "\"");
+        }
+
+        boolean result = false;
+
+        if (!getUsers().containsKey(userName)) {
+            if (log.isInfoEnabled()) {
+                log.info("addUserToGroup(): Adding new group \"" + groupName + "\"");
+            }
+            groups.put(groupName, new HashSet<String>(Collections.singleton(userName)));
+            result = true;
+        }
+        else {
+            getUsersInGroup(groupName).add(userName);
+            result = store();
+        }
+        if (log.isInfoEnabled()) {
+            log.info("addUserToGroup(): " + (result ? "Success" : "Failed"));
+        }
+        return result;
+    }
+
+    public boolean removeUserFromGroup(String userName, String groupName) {
+        if (log.isInfoEnabled()) {
+            log.info("removeUserFromGroup(): Removing user \"" + userName + "\" from group \"" + groupName + "\"");
+        }
+
+        boolean result = false;
+
+        if (!getUsers().containsKey(userName)) {
+            log.error("removeUserFromGroup(): Unknown group \"" + groupName + "\"");
+        }
+        else {
+            Set<String> usersInGroup = getUsersInGroup(groupName);
+            if (!usersInGroup.contains(userName)) {
+                log.warn("removeUserFromGroup(): User \"" + userName + "\" wasn't in group \"" + groupName + "\" to begin with");
+                result = true;
+            }
+            else {
+                usersInGroup.remove(userName);
+                getGroupsForUser(userName).remove(groupName);
+                result = store();
+            }
+        }
+        if (log.isInfoEnabled()) {
+            log.info("removeUserFromGroup(): " + (result ? "Success" : "Failed"));
+        }
+        return result;
+    }
+        
 }
