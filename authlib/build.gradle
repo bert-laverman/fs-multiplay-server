@@ -15,3 +15,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:2.22.1'
 }
+
+test {
+    testLogging.showStandardStreams = true
+}
