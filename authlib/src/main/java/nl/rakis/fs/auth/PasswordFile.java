@@ -53,6 +53,13 @@ public class PasswordFile extends SecurityFile {
         this.path = new File(path);
     }
 
+    public PasswordFile(File path)
+    {
+        log.debug("PasswordFile(\"" + path.getAbsolutePath() + ")");
+
+        this.path = path;
+    }
+
     private void load() {
         if (log.isDebugEnabled()) {
             log.debug("load()");

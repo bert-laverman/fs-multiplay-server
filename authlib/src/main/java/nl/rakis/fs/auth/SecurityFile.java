@@ -20,9 +20,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.util.Calendar;
-import java.util.Formatter;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -35,6 +35,28 @@ public abstract class SecurityFile
         if ((fld != null) && (fld.length() > 0) && !fld.equals("x") && !fld.equals("*")) {
             throw new IOException(fldName + " should be empty: \"" + fld + "\"");
         }
+    }
+
+    /**
+     * String.split() will not accept a trailing delimeter.
+     */
+    protected List<String> split(String line, int delim) {
+        List<String> result = new ArrayList<>();
+
+        int first = 0;
+        int last = line.indexOf(delim);
+        while (last != -1) {
+            result.add(line.substring(first, last));
+            first = last+1;
+            last = line.indexOf(delim, first);
+        }
+        result.add(line.substring(first, line.length()));
+
+        return result;
+    }
+
+    protected List<String> split(String line) {
+        return split(line, ':');
     }
 
     protected void checkNonEmpty(String fldName, String fld) throws IOException {

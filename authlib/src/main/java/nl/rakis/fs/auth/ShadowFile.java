@@ -132,4 +132,25 @@ public class ShadowFile extends SecurityFile {
         }
         return result;
     }
+
+
+    public boolean removePassword(String userName) {
+        if (log.isInfoEnabled()) {
+            log.info("removePassword(): Removing password for user \"" + userName + "\"");
+        }
+
+        boolean result = false;
+
+        if (passwords.containsKey(userName)) {
+            passwords.remove(userName);
+            result = store();
+        }
+        else {
+            log.error("removePassword(): User \"" + userName + "\" does not exist.");
+        }
+        if (log.isInfoEnabled()) {
+            log.info("removePassword(): " + (result ? "Success" : "Failed"));
+        }
+        return result;
+    }
 }

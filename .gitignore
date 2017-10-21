@@ -25,3 +25,4 @@ authlib/build/
 authlib/bin/
 build/
 old-server/target/
+authutil/bin/

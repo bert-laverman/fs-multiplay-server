@@ -1,0 +1,21 @@
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'javax:javaee-api:7.0'
+
+    compile project(':authlib')
+
+    compile 'com.auth0:java-jwt:3.0.2'
+    compile 'org.apache.logging.log4j:log4j-api:2.9.1'
+    compile 'org.apache.logging.log4j:log4j-core:2.9.1'
+}
+
+test {
+    testLogging.showStandardStreams = true
+}
+
+mainClassName = "nl.rakis.fs.auth.AuthUtil"

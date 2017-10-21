@@ -70,13 +70,16 @@ public class TestGroupFile {
         try {
             File tmp = File.createTempFile("junit_", ".tmp");
             FileUtil.createFile(tmp, "");
-            GroupFile tmpGrp = new GroupFile(tmp.getAbsolutePath());
+            GroupFile tmpGrp = new GroupFile(tmp);
 
             Assert.assertEquals("Empty file should have no groups", 0, tmpGrp.getGroups().size());
             Assert.assertTrue(tmpGrp.addUserToGroup("testUser", "testGroup"));
             Assert.assertEquals("Adding a user to group should result in a count of 1", 1, tmpGrp.getGroups().size());
             Assert.assertNotNull("Group \"testGroup\" should now exist", tmpGrp.getGroups().containsKey("testGroup"));
             Assert.assertTrue("User \"testUser\" should now be in group \"testGroup\"", tmpGrp.isUserInGroup("testUser", "testGroup"));
+
+            tmpGrp = new GroupFile(tmp);
+            Assert.assertTrue("User \"testUser\" should still be in group \"testGroup\" after reload", tmpGrp.isUserInGroup("testUser", "testGroup"));
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
