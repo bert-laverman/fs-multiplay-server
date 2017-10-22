@@ -30,6 +30,8 @@ public class AuthUtil
         System.err.println("  authutil [-d|--dir <path>] adduser <username> <real-name> <default-session>");
         System.err.println("  authutil [-d|--dir <path>] rmuser <username>");
         System.err.println("  authutil [-d|--dir <path>] passwd <username>");
+        System.err.println("  authutil [-d|--dir <path>] basicauth <username>");
+        System.err.println("  authutil [-d|--dir <path>] unbasicauth <base64-token>");
         System.err.println("  authutil [-d|--dir <path>] addgroup <groupname>");
         System.err.println("  authutil [-d|--dir <path>] rmgroup <groupname>");
         System.err.println("  authutil [-d|--dir <path>] addgroupuser <groupname> <username>");
@@ -95,6 +97,29 @@ public class AuthUtil
                 System.err.println("Failed to set password for user \"" + userName + "\"");
             }
         }
+    }
+
+    private static void basicAuth(String userName) {
+        Console con = System.console();
+        if (con == null) {
+            System.err.println("Failed to open console for input");
+            System.exit(-2);
+        }
+        System.out.print("Enter password: ");
+        String p1 = new String(con.readPassword());
+        System.out.print("Re-enter password: ");
+        String p2 = new String(con.readPassword());
+        if (!p1.equals(p2)) {
+            System.err.println("Passwords do not match");
+            System.exit(-3);
+        }
+
+        System.err.println(new BasicAuth(userName, p1).toString());
+    }
+
+    private static void unBasicAuth(String token) {
+        BasicAuth ba = BasicAuth.fromAuthorizationHeader("BASIC " + token);
+        System.err.println("Username=\"" + ba.username + "\", password=\"" + ba.password + "\"");
     }
 
     private static void addGroup(String groupName) {
@@ -229,6 +254,26 @@ public class AuthUtil
                 i += 1;
                 if ((i+1) == args.length) {
                     passwd(args [i]);
+                }
+                else {
+                    usage();
+                    System.exit(-1);
+                }
+            }
+            else if (args [i].equals("basicauth")) {
+                i += 1;
+                if ((i+1) == args.length) {
+                    basicAuth(args [i]);
+                }
+                else {
+                    usage();
+                    System.exit(-1);
+                }
+            }
+            else if (args [i].equals("unbasicauth")) {
+                i += 1;
+                if ((i+1) == args.length) {
+                    unBasicAuth(args [i]);
                 }
                 else {
                     usage();

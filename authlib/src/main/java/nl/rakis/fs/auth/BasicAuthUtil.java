@@ -42,4 +42,5 @@ public class BasicAuthUtil {
 
         return result;
     }
+
 }
