@@ -39,7 +39,7 @@ public class Authenticate {
     }
 
 
-    private ShadowFile shadow;
+    private AuthFileManager files;
 
     private static void delayResponse()
     {
