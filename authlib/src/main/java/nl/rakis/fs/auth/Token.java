@@ -36,7 +36,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public class Token
 {
 
-    private static final String BEARER_PREFIX = "BEARER ";
+    public static final String BEARER = "BEARER";
+    private static final String BEARER_PREFIX = BEARER + " ";
+
     public static final String ISSUER = "FSMultiPlayer";
     public static final String CLAIM_SESSIONID = "sessionId";
     public static final String CLAIM_USERNAME = "username";
