@@ -35,7 +35,7 @@ public class TokenManager
 
     private static final Logger log = LogManager.getLogger(TokenManager.class);
 
-    public static KeyPair pair = null;
+    //public static KeyPair pair = null;
 
     private File keyDir;
     private File priKeyPath;

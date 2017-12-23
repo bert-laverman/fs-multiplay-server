@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package nl.rakis.fs.auth;
+package nl.rakis.fs.config;
 
 /**
  * This should go as soon as I get a valid alternative set up, like Microprofile Config
