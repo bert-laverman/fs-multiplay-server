@@ -25,17 +25,29 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.NotAuthorizedException;
 
+import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+
+@ApplicationScoped
+@Singleton
 public class TokenManager
 {
 
+    public static final String CFG_AUTH_CERTDIR = "nl.rakis.fs.auth.certdir";
+    public static final String DEF_AUTH_CERTDIR = "/opt/fsmultiplay/cert";
+
     private static final Logger log = LogManager.getLogger(TokenManager.class);
 
-    //public static KeyPair pair = null;
+    @Inject
+    private Config cfg;
 
     private File keyDir;
     private File priKeyPath;
@@ -45,39 +57,32 @@ public class TokenManager
     private PEMPublicKeyStore pubStore;
     private RSAPublicKey pubKey;
 
-    public TokenManager(File certPath) {
-        if (log.isDebugEnabled()) {
-            log.debug("TokenManager(\"" + certPath + "\")");
-        }
+    public TokenManager() {
+        log.debug("TokenManager()");
 
-        this.keyDir = certPath;
-        this.priKeyPath = new File(keyDir, "private.pem");
-        this.pubKeyPath = new File(keyDir, "public.pem");
-        this.priStore = new PEMPrivateKeyStore(priKeyPath);
-        this.pubStore = new PEMPublicKeyStore(pubKeyPath);
-        
-        init();
         log.debug("TokenManager(): Done");
     }
 
-    private KeyPair generateKeyPair() {
-        log.debug("generateKeyPair()");
-        KeyPair result = null;
-        try {
-            log.debug("generateKeyPair(): Getting generator for algorithm \"RSA\"");
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(2048);
-            log.debug("generateKeyPair(): Generating keypair");
-            result = generator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        log.debug("generateKeyPair(): " + ((result != null) ? "Success" : "Failed"));
-        return result;
-    }
-
-    public void init() {
+    @PostConstruct
+    private void init() {
         log.debug("init()");
+
+        this.keyDir = new File(cfg.get(CFG_AUTH_CERTDIR, DEF_AUTH_CERTDIR));
+        if (log.isInfoEnabled()) {
+            log.info("init(): Certificates are kept in \"" + keyDir.getAbsolutePath() + "\"");
+        }
+
+        this.priKeyPath = new File(keyDir, "private.pem");
+        if (log.isDebugEnabled()) {
+            log.debug("init(): Private key is kept in \"" + priKeyPath.getAbsolutePath() + "\"");
+        }
+        this.pubKeyPath = new File(keyDir, "public.pem");
+        if (log.isDebugEnabled()) {
+            log.debug("init(): Public key is kept in \"" + pubKeyPath.getAbsolutePath() + "\"");
+        }
+
+        this.priStore = new PEMPrivateKeyStore(priKeyPath);
+        this.pubStore = new PEMPublicKeyStore(pubKeyPath);
 
         if (keyDir == null) {
             log.error("init(): No path to store/retrieve keys set!");
@@ -97,6 +102,22 @@ public class TokenManager
         }
 
         log.debug("init(): Done");
+    }
+
+    private KeyPair generateKeyPair() {
+        log.debug("generateKeyPair()");
+        KeyPair result = null;
+        try {
+            log.debug("generateKeyPair(): Getting generator for algorithm \"RSA\"");
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(2048);
+            log.debug("generateKeyPair(): Generating keypair");
+            result = generator.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        log.debug("generateKeyPair(): " + ((result != null) ? "Success" : "Failed"));
+        return result;
     }
 
     private boolean loadKeys() {

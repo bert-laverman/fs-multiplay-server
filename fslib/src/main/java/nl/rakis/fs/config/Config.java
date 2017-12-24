@@ -16,9 +16,14 @@
  */
 package nl.rakis.fs.config;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
+
 /**
  * This should go as soon as I get a valid alternative set up, like Microprofile Config
  */
+@ApplicationScoped
+@Singleton
 public class Config
 {
 

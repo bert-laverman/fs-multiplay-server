@@ -16,21 +16,36 @@
  */
 package nl.rakis.fs.auth;
 
+import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 
+@ApplicationScoped
+@Singleton
 public class AuthFileManager
 {
 
+    public static final String CFG_AUTH_DIR = "nl.rakis.fs.auth.dir";
+    public static final String DEF_AUTH_DIR = "/var/fsmultiplay/etc";
+
     private static final Logger log = LogManager.getLogger(AuthFileManager.class);
 
-    public static final String DEF_DIR = "etc";
+    public static final String CFG_PASSWD = "nl.rakis.fs.auth.passwd";
     public static final String DEF_PASSWD = "passwd";
+    public static final String CFG_SHADOW = "nl.rakis.fs.auth.shadow";
     public static final String DEF_SHADOW = "shadow";
+    public static final String CFG_GROUP = "nl.rakis.fs.auth.group";
     public static final String DEF_GROUP = "group";
+
+    @Inject
+    private Config cfg;
 
     private File dAuth;
     private File fPasswd;
@@ -40,30 +55,47 @@ public class AuthFileManager
     private ShadowFile shadow;
     private GroupFile group;
 
-    public AuthFileManager(File dAuth) {
+    public AuthFileManager() {
         log.debug("AuthFileManager()");
 
-        this.dAuth = dAuth;
-        this.fPasswd = new File(dAuth, DEF_PASSWD);
-        this.fShadow = new File(dAuth, DEF_SHADOW);
-        this.fGroup = new File(dAuth, DEF_GROUP);
+        log.debug("AuthFileManager(): Done");
+    }
+
+    @PostConstruct
+    private void init() {
+        log.debug("init()");
+
+        dAuth = new File(cfg.get(CFG_AUTH_DIR, DEF_AUTH_DIR));
+        if (log.isInfoEnabled()) {
+            log.info("init(): Authentication files are kept in \"" + dAuth.getAbsolutePath() + "\"");
+        }
+
+        fPasswd = new File(dAuth, cfg.get(CFG_PASSWD, DEF_PASSWD));
+        if (log.isDebugEnabled()) {
+            log.debug("init(): Accounts are kept in \"" + fPasswd.getAbsolutePath() + "\"");
+        }
+        this.fShadow = new File(dAuth, cfg.get(CFG_SHADOW, DEF_SHADOW));
+        if (log.isDebugEnabled()) {
+            log.debug("init(): Password hashes are kept in \"" + fShadow.getAbsolutePath() + "\"");
+        }
+        this.fGroup = new File(dAuth, cfg.get(CFG_GROUP, DEF_GROUP));
+        if (log.isDebugEnabled()) {
+            log.debug("init(): Group memberships are kept in \"" + fGroup.getAbsolutePath() + "\"");
+        }
         try {
             if (!checkOrCreateDir(dAuth) ||
                 !checkOrCreateFile(fPasswd) || !checkOrCreateFile(fShadow) || !checkOrCreateFile(fGroup))
             {
-                log.error("AuthFileManager(): Initialization failed");
+                log.error("init(): Initialization failed");
             }
             this.passwd = new PasswordFile(fPasswd);
             this.shadow = new ShadowFile(fShadow);
             this.group = new GroupFile(fGroup);
         }
         catch (IOException e) {
-            log.error("AuthFileManager(): Exception while Initializing files", e);
+            log.error("init(): Exception while Initializing files", e);
         }
-    }
-
-    public AuthFileManager() {
-        this(new File(DEF_DIR));
+        log.debug("init(): Done");
     }
 
     private boolean checkOrCreateDir(File dir)

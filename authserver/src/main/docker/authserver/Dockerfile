@@ -18,5 +18,5 @@ EXPOSE 4848 8009 8080 8181
 USER payara
 WORKDIR $PAYARA_PATH
 
-COPY ../../../../build/libs/$PKG_FILE_NAME
-ENTRYPOINT ["java", "-jar", "/opt/payara/fs-multiplay-server.jar"]
+COPY $PKG_FILE_NAME
+ENTRYPOINT ["java", "-jar", "/opt/payara/authserver.jar"]

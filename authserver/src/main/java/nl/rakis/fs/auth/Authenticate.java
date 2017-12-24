@@ -16,20 +16,19 @@
  */
 package nl.rakis.fs.auth;
 
+import nl.rakis.fs.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-
-import nl.rakis.fs.config.Config;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -45,12 +44,6 @@ public class Authenticate {
     public static final String CFG_AUTH_SCOPE = "nl.rakis.fs.auth.scope";
     public static final String DEF_AUTH_SCOPE = "noreply.com";
 
-    public static final String CFG_AUTH_DIR = "nl.rakis.fs.auth.dir";
-    public static final String DEF_AUTH_DIR = "/var/fsmultiplay/etc";
-
-    public static final String CFG_AUTH_CERTDIR = "nl.rakis.fs.auth.certdir";
-    public static final String DEF_AUTH_CERTDIR = "/var/fsmultiplay/cert";
-
     public static final String URL_USER_CALLSIGN = "nl.rakis.fs.url.user.callsign";
     public static final String URL_USER_SESSION = "nl.rakis.fs.url.user.session";
 
@@ -64,10 +57,15 @@ public class Authenticate {
         public String token_type;
     }
 
+    @Inject
     private Config config;
 
     private String authScope;
+
+    @Inject
     private AuthFileManager files;
+
+    @Inject
     private TokenManager tokenMgr;
 
     private static void delayResponse()
@@ -81,13 +79,9 @@ public class Authenticate {
     }
 
     @PostConstruct
-    public void init()
+    private void init()
     {
-        config = new Config();
-
         authScope = config.get(CFG_AUTH_SCOPE, DEF_AUTH_SCOPE);
-        files = new AuthFileManager(new File(config.get(CFG_AUTH_DIR, DEF_AUTH_DIR)));
-        tokenMgr = new TokenManager(new File(config.get(CFG_AUTH_CERTDIR, DEF_AUTH_CERTDIR)));
     }
 
     /*

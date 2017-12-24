@@ -30,11 +30,11 @@ task run(type: Exec, dependsOn: war) {
 }
 
 task uberJar(type: Exec, dependsOn: war) {
-    String uberJarPath = 'build/libs/' + rootProject.name + '.jar'
+    String uberJarPath = 'build/libs/' + project.name + '.jar'
     commandLine('java', '-jar', getMicroPath(), '--deploy', war.archivePath, '--outputUberJar', uberJarPath)
 }
 
-def String getMicroPath() {
+String getMicroPath() {
     configurations.providedCompile.find { it.name =~ /payara-micro.*\.jar/ }.absolutePath
 }
 
@@ -47,3 +47,4 @@ task zip(type: Exec) {
     commandLine('git', 'archive', '-o', 'build/' + rootProject.name + '_src.zip', 'HEAD')
     // This task will fail if the 'build' folder does not exist.
 }
+

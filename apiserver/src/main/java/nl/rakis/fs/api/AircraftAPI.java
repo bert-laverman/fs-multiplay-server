@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -43,21 +44,22 @@ public class AircraftAPI
 
     public static final String URL_PUBLICKEY = "nl.rakis.fs.url.publickey";
 
+    @Inject
     Config config;
+
     AircraftRules rules;
+
+    @Inject
     TokenManager tknMgr;
 
     @PostConstruct
     public void init()
     {
-        config = new Config();
-
         final String keyUrl = config.get(URL_PUBLICKEY);
         if (keyUrl != null) {
             Client keyClient = new Client(keyUrl);
         }
         rules = new AircraftRules();
-        //TODO tknMgr
     }
 
     @GET
