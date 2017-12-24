@@ -18,17 +18,33 @@ package nl.rakis.fs.auth;
 
 import java.io.File;
 
+import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jglue.cdiunit.ActivatedAlternatives;
+import org.jglue.cdiunit.CdiRunner;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class TestTokenManager{
+import javax.inject.Inject;
+
+@RunWith(CdiRunner.class)
+@ActivatedAlternatives(TestConfig.class)
+public class TestTokenManager
+{
     
     private static final Logger log = LogManager.getLogger(TestTokenManager.class);
 
-    private TokenManager buildTokenManager() {
+
+    @Inject
+    private Config cfg;
+    @Inject
+    private TokenManager mgr;
+
+    private void buildTokenManager() {
         final File storeDir = new File("build");
+
         File keyPath = new File(storeDir, "public.pem");
         if (keyPath.exists()) {
             log.debug("buildTokenManager(): Cleaning up old \"" + keyPath + "\"");
@@ -39,15 +55,11 @@ public class TestTokenManager{
             log.debug("buildTokenManager(): Cleaning up old \"" + keyPath + "\"");
             keyPath.delete();
         }
-
-        return new TokenManager(storeDir);
     }
 
     @Test
     public void testKeyGeneration() {
         log.info("testKeyGeneration(): ### Start test");
-
-        TokenManager mgr = buildTokenManager();
 
         Assert.assertNotNull("Creating TokenManager should not fail", mgr);
         Assert.assertNotNull("TokenManager should auto-generate private key", mgr.getPrivateKey());
@@ -59,8 +71,6 @@ public class TestTokenManager{
     @Test
     public void testNewToken() {
         log.info("testNewToken(): ### Start test");
-        
-        TokenManager mgr = buildTokenManager();
 
         Token token = mgr.newToken("username", "1234-1234-1234-1234-1234-1234", "session", "PH-AAA");
         Assert.assertNotNull(token);

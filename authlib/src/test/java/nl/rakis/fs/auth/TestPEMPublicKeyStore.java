@@ -20,17 +20,30 @@ import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
 
+import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jglue.cdiunit.ActivatedAlternatives;
+import org.jglue.cdiunit.CdiRunner;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.inject.Inject;
 
 
+@RunWith(CdiRunner.class)
+@ActivatedAlternatives(TestConfig.class)
 public class TestPEMPublicKeyStore
 {
 
     private static final Logger log = LogManager.getLogger(TestTokenManager.class);
-    
+
+    @Inject
+    private Config cfg;
+    @Inject
+    private TokenManager mgr;
+
     @Test
     public void testStoreKey() {
         log.info("testStoreKey(): ### Start test");
@@ -38,7 +51,6 @@ public class TestPEMPublicKeyStore
         File storeDir = new File("build");
         File storePath = new File(storeDir, "test.pem");
 
-        TokenManager mgr = new TokenManager(storeDir);
         Assert.assertNotNull("Creating TokenManager should not fail", mgr);
         Assert.assertNotNull("TokenManager should auto-generate public key", mgr.getPublicKey());
 

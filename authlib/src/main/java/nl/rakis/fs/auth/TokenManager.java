@@ -36,7 +36,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-@ApplicationScoped
 @Singleton
 public class TokenManager
 {
@@ -64,7 +63,7 @@ public class TokenManager
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         log.debug("init()");
 
         this.keyDir = new File(cfg.get(CFG_AUTH_CERTDIR, DEF_AUTH_CERTDIR));

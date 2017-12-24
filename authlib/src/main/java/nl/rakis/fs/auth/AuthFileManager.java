@@ -27,7 +27,6 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 
-@ApplicationScoped
 @Singleton
 public class AuthFileManager
 {

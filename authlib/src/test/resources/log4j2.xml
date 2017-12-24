@@ -9,5 +9,8 @@
         <Root level="DEBUG">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="org.jboss.weld">
+            <Level value="INFO"/>
+        </Logger>
     </Loggers>
 </Configuration>

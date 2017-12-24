@@ -16,4 +16,6 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0'
     testCompile 'junit:junit:4.12'
     testCompile 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:2.22.1'
+    testCompile 'org.jglue.cdi-unit:cdi-unit:4.0.1'
+    testCompile 'org.jboss.weld.se:weld-se:2.4.6.Final'
 }
