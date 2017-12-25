@@ -35,7 +35,7 @@ import java.util.UUID;
 /**
  * The REST API for Authentication
  */
-@Path("/auth")
+@Path("auth")
 @RequestScoped
 public class Authenticate {
 
