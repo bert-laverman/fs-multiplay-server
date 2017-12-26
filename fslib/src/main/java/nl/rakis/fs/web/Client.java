@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.json.JsonObject;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
 public class Client {

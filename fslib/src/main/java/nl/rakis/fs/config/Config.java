@@ -16,10 +16,17 @@
  */
 package nl.rakis.fs.config;
 
-import javax.enterprise.context.ApplicationScoped;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * This should go as soon as I get a valid alternative set up, like Microprofile Config
@@ -28,7 +35,46 @@ import java.util.Map;
 public class Config
 {
 
+    private static final Logger log = LogManager.getLogger(Config.class);
+
+    public static final String CFG_PROPFILE = "nl.rakis.fs.config";
+
     private Map<String,String> cachedValues = new HashMap<>();
+
+    @PostConstruct
+    private void init() {
+        log.debug("init()");
+
+        final String propPath = System.getenv(CFG_PROPFILE);
+        if ((propPath != null) && !propPath.trim().isEmpty()) {
+            final File propFile = new File(propPath);
+            if (propFile.exists() && propFile.isFile()) {
+                if (log.isInfoEnabled()) {
+                    log.info("init(): \"Reading configuration from \"" + propPath + "\"");
+                }
+                try {
+                    try (FileReader fr = new FileReader(propFile)) {
+                        Properties props = new Properties();
+                        props.load(fr);
+                        for (final String key: props.stringPropertyNames()) {
+                            final String value = props.getProperty(key);
+                            if (log.isInfoEnabled()) {
+                                log.info("init(): \"" + key + "\"=\"" + value + "\"");
+                            }
+                            cachedValues.put(key, value);
+                        }
+                    }
+                }
+                catch (IOException e) {
+                    log.error("init(): Cannot read \"" + propPath + "\"");
+                }
+            }
+            else {
+                log.error("init(): \"" + propPath + "\" is not a file");
+            }
+        }
+        log.debug("init(): Done");
+    }
 
     /**
      * Get the cached value if available, otherwise an environment variable.

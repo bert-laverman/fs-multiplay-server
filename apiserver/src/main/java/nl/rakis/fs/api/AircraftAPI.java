@@ -35,7 +35,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("/aircraft")
+@Path("aircraft")
 @RequestScoped
 public class AircraftAPI
 {

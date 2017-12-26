@@ -32,7 +32,7 @@ public class AuthFileManager
 {
 
     public static final String CFG_AUTH_DIR = "nl.rakis.fs.auth.dir";
-    public static final String DEF_AUTH_DIR = "/var/fsmultiplay/etc";
+    public static final String DEF_AUTH_DIR = "/opt/fsmultiplay/etc";
 
     private static final Logger log = LogManager.getLogger(AuthFileManager.class);
 
