@@ -60,13 +60,17 @@ public class Client {
         }
     }
 
-    public JsonObject getSynch() {
+    public void getSynch() {
+
+    }
+
+    public JsonObject getSynchAsJson() {
         log.debug("getSynch()");
 
         return getJsonObjectSynch(baseUrl);
     }
 
-    public JsonObject getSynch(String... args) {
+    public JsonObject getSynchasJson(String... args) {
         log.debug("getSynch(...)");
 
         StringBuilder bld = new StringBuilder(baseUrl);

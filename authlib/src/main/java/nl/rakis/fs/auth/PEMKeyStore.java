@@ -16,16 +16,13 @@
  */
 package nl.rakis.fs.auth;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Base64;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
+
+import java.io.*;
 
 public class PEMKeyStore
 {
@@ -39,34 +36,20 @@ public class PEMKeyStore
     }
 
     protected byte[] readData() throws IOException {
-        StringBuilder bld = new StringBuilder();
-
         try (FileReader fr = new FileReader(path);
-             BufferedReader br = new BufferedReader(fr))
+             PemReader pr = new PemReader(fr))
         {
-            String line = br.readLine();
-            while ((line != null) && !line.startsWith("-----BEGIN ") && !line.endsWith("-----")) {
-                line = br.readLine();
-            }
-            if (line != null) { // Skip beyond BEGIN
-                line = br.readLine();
-            }
-            while ((line != null) && !line.startsWith("-----END ") && !line.endsWith("-----")) {
-                bld.append(line);
-                line = br.readLine();
-            }
+            PemObject po = pr.readPemObject();
+            return po.getContent();
         }
-        return Base64.getMimeDecoder().decode(bld.toString());
     }
 
-    protected void storeKey(String keyType, byte[] keyData) {
+    protected void storeKey(byte[] key, String description) {
         try {
             try (FileWriter fw = new FileWriter(path);
-                PrintWriter pr = new PrintWriter(fw))
+                 PemWriter pw = new PemWriter(fw))
             {
-                pr.println("-----BEGIN " + keyType.toUpperCase() + " -----");
-                pr.println(Base64.getMimeEncoder().encodeToString(keyData));
-                pr.println("-----END " + keyType.toUpperCase() + " -----");
+                pw.writeObject(new PemObject(description, key));
             }
         }
         catch (IOException e) {

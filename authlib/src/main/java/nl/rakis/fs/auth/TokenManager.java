@@ -16,24 +16,18 @@
  */
 package nl.rakis.fs.auth;
 
-import java.io.File;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.NotAuthorizedException;
-
 import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAuthorizedException;
+import java.io.File;
+import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 
 @Singleton
@@ -126,6 +120,8 @@ public class TokenManager
         priKey = null;
         pubKey = null;
 
+        log.error("loadKeys(): Attempting to load private key from \"" + priKeyPath.getAbsolutePath() + "\"");
+        log.error("loadKeys(): Attempting to load public key from \"" + pubKeyPath.getAbsolutePath() + "\"");
         if (log.isDebugEnabled()) {
             log.debug("loadKeys(): Attempting to load private key from \"" + priKeyPath.getAbsolutePath() + "\"");
         }

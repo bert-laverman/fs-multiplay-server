@@ -16,6 +16,9 @@
  */
 package nl.rakis.fs.auth;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,9 +27,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class PEMPublicKeyStore
     extends PEMKeyStore
@@ -68,7 +68,7 @@ public class PEMPublicKeyStore
     }
 
     public void storeKey(PublicKey key) {
-        storeKey("RSA PUBLIC KEY", key.getEncoded());
+        storeKey(key.getEncoded(), "RSA PUBLIC KEY");
     }
 
 }

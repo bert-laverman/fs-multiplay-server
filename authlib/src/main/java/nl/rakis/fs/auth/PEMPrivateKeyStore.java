@@ -16,6 +16,9 @@
  */
 package nl.rakis.fs.auth;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,10 +26,7 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 public class PEMPrivateKeyStore
     extends PEMKeyStore
@@ -42,7 +42,7 @@ public class PEMPrivateKeyStore
         PrivateKey result = null;
 
         try {
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(readData());
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(readData());
             KeyFactory kf = KeyFactory.getInstance("RSA");
             result = kf.generatePrivate(spec);
         }
@@ -63,6 +63,6 @@ public class PEMPrivateKeyStore
     }
 
     public void storeKey(PrivateKey key) {
-        storeKey("RSA PRIVATE KEY", key.getEncoded());
+        storeKey(key.getEncoded(), "RSA PRIVATE KEY");
     }
 }

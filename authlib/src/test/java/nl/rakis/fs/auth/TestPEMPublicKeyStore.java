@@ -16,10 +16,6 @@
  */
 package nl.rakis.fs.auth;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.PublicKey;
-
 import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.security.PublicKey;
 
 
 @RunWith(CdiRunner.class)
@@ -64,7 +63,7 @@ public class TestPEMPublicKeyStore
     public void testLoadKey() {
         log.info("testLoadKey(): ### Start test");
         
-        File storePath = new File("test.pem");
+        File storePath = new File(new File("build"), "test.pem");
 
         try {
             FileUtil.createFile(storePath, "-----BEGIN RSA PUBLIC KEY -----\n" +
@@ -83,10 +82,32 @@ public class TestPEMPublicKeyStore
         PEMPublicKeyStore store = new PEMPublicKeyStore(storePath);
         PublicKey key = store.loadKey();
         Assert.assertNotNull("PEMPublicKeyStore.loadKey should return a value", key);
-        final String clazzName = key.getClass().getSimpleName();
+        String clazzName = key.getClass().getSimpleName();
         log.debug("testLoadKey(): clazzName = \"" + clazzName + "\"");
         Assert.assertTrue("Key should be an RSA public key", clazzName.startsWith("RSAPublicKey"));
 
+        log.debug("testLoadKey: Try again");
+        // try again
+        storePath.delete();
+        try {
+            FileUtil.createFile(storePath, "-----BEGIN RSA PUBLIC KEY-----\r\n" +
+                    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj4r0yPsGeAEAnF3OOF3mNWWK1cTLyAX/\r\n" +
+                    "7epwuc0ZC9HJyIMWi7ujdikH5RCG2l9dyt1DdbMuPHhtUJNPHucrUso3+IpzUO3kWEy41Wtlp8uy\r\n" +
+                    "3pWt7grnaSeMmBuRkYPL5+yvjI5pwaEq7kYXs5KkU7PNMPzFYi9fGIG9SkseK9tn+xnlRv9OKOXs\r\n" +
+                    "QBHeqwkFMFVVuhOmuQFWkKGyoW7c1NVv1SOHexW6nvzCeDC+zEnJGy1KnsiPNC/7oirZe0jBSsxk\r\n" +
+                    "b/4zsiSp5UDD5NJmZFPKaxbBibJ0fBSpmJ0kk0nQyzw8pw2OZ3VOWKxXkgwgPiPMvC+XChmKdXae\r\n" +
+                    "IGJ6GQIDAQAB\r\n" +
+                    "-----END RSA PUBLIC KEY-----");
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        store = new PEMPublicKeyStore(storePath);
+        key = store.loadKey();
+        Assert.assertNotNull("PEMPublicKeyStore.loadKey should return a value", key);
+        clazzName = key.getClass().getSimpleName();
+        log.debug("testLoadKey(): clazzName = \"" + clazzName + "\"");
+        Assert.assertTrue("Key should be an RSA public key", clazzName.startsWith("RSAPublicKey"));
         log.info("testLoadKey(): ### Finished test");
     }
 }

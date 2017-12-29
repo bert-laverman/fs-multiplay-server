@@ -17,12 +17,10 @@
 package nl.rakis.fs.api;
 
 import nl.rakis.fs.api.rules.AircraftRules;
-import nl.rakis.fs.config.Config;
 import nl.rakis.fs.auth.Token;
-import nl.rakis.fs.auth.TokenManager;
+import nl.rakis.fs.auth.TokenVerifier;
 import nl.rakis.fs.info.AircraftInfo;
 import nl.rakis.fs.info.JsonFields;
-import nl.rakis.fs.web.Client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,23 +40,14 @@ public class AircraftAPI
 
     private static final Logger log = LogManager.getLogger(AircraftAPI.class);
 
-    public static final String URL_PUBLICKEY = "nl.rakis.fs.url.publickey";
-
     @Inject
-    Config config;
+    private TokenVerifier verifier;
 
-    AircraftRules rules;
-
-    @Inject
-    TokenManager tknMgr;
+    private AircraftRules rules;
 
     @PostConstruct
     public void init()
     {
-        final String keyUrl = config.get(URL_PUBLICKEY);
-        if (keyUrl != null) {
-            Client keyClient = new Client(keyUrl);
-        }
         rules = new AircraftRules();
     }
 
@@ -79,7 +68,7 @@ public class AircraftAPI
     public AircraftInfo getAircraft(@PathParam("callsign")        String callsign,
                                     @HeaderParam("authorization") String authHdr)
     {
-        Token token = tknMgr.decodeToken(authHdr);
+        Token token = verifier.decodeToken(authHdr);
 
         AircraftInfo result = new AircraftInfo(callsign);
 
@@ -96,7 +85,7 @@ public class AircraftAPI
                                                                      JsonObject aircraft,
                                        @HeaderParam("authorization") String authHdr)
     {
-        Token token = tknMgr.decodeToken(authHdr);
+        Token token = verifier.decodeToken(authHdr);
 
         AircraftInfo result = getAircraft(callsign, authHdr);
 
@@ -112,7 +101,7 @@ public class AircraftAPI
     public String createAircraft(                              JsonObject aircraft,
                                  @HeaderParam("authorization") String authHdr)
     {
-        Token token = tknMgr.decodeToken(authHdr);
+        Token token = verifier.decodeToken(authHdr);
 
         rules.checkCreate(aircraft, token);
 

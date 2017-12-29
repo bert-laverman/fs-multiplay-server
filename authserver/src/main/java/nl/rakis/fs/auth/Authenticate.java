@@ -19,6 +19,8 @@ package nl.rakis.fs.auth;
 import nl.rakis.fs.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
@@ -29,7 +31,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.util.Base64;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.UUID;
 
 /**
@@ -229,12 +232,19 @@ public class Authenticate {
     @Path("/publickey")
     @Produces(MediaType.TEXT_PLAIN)
     public String getPublicKey() {
-        StringBuilder bld = new StringBuilder();
-
-        bld.append("-----BEGIN RSA PUBLIC KEY-----\n");
-        bld.append(Base64.getMimeEncoder().encodeToString(tokenMgr.getPublicKey().getEncoded()));
-        bld.append("-----END RSA PUBLIC KEY-----\n");
-
-        return bld.toString();
+        String result = "";
+        try {
+            try (StringWriter sw = new StringWriter();
+                 PemWriter pw = new PemWriter(sw))
+            {
+                pw.writeObject(new PemObject("RSA PUBLIC KEY", tokenMgr.getPublicKey().getEncoded()));
+                pw.flush();
+                result = sw.toString();
+            }
+        }
+        catch (IOException e) {
+            log.error("storeKey(): Exception writing key", e);
+        }
+        return result;
     }
 }
