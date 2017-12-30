@@ -32,11 +32,12 @@ public class SessionInfo
     extends FSData
 {
     public static final String SESSION_TYPE = "Session";
-    public static final String ADMIN_SESSION = "Admin Session";
-    public static final String DUMMY_SESSION = "Dummy Session";
 
     private String name;
     private String description;
+    private boolean openSession;
+
+    private List<String> members = new ArrayList<>();
     private List<String> aircraft = new ArrayList<>();
 
     public SessionInfo() {
@@ -179,11 +180,27 @@ public class SessionInfo
         this.description = description;
     }
 
+    public boolean isOpenSession() {
+        return openSession;
+    }
+
+    public void setOpenSession(boolean openSession) {
+        this.openSession = openSession;
+    }
+
     public List<String> getAircraft() {
         return aircraft;
     }
 
     public void setAircraft(List<String> aircraft) {
         this.aircraft = aircraft;
+    }
+
+    public List<String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<String> members) {
+        this.members = members;
     }
 }

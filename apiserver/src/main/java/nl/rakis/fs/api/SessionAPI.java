@@ -16,11 +16,11 @@
  */
 package nl.rakis.fs.api;
 
-import nl.rakis.fs.api.rules.AircraftRules;
+import nl.rakis.fs.api.rules.SessionRules;
 import nl.rakis.fs.auth.Token;
 import nl.rakis.fs.auth.TokenVerifier;
-import nl.rakis.fs.info.AircraftInfo;
 import nl.rakis.fs.info.JsonFields;
+import nl.rakis.fs.info.SessionInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,44 +33,42 @@ import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("aircraft")
+@Path("session")
 @RequestScoped
-public class AircraftAPI
-{
+public class SessionAPI {
 
-    private static final Logger log = LogManager.getLogger(AircraftAPI.class);
+    private static final Logger log = LogManager.getLogger(SessionAPI.class);
 
     @Inject
     private TokenVerifier verifier;
 
-    private AircraftRules rules;
+    private SessionRules rules;
 
     @PostConstruct
-    private void init()
-    {
-        rules = new AircraftRules();
+    private void init() {
+        rules = new SessionRules();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<AircraftInfo> getAircraftList(@HeaderParam("authorization") String authHdr)
+    public List<SessionInfo> getSessionList(@HeaderParam("authorization") String authHdr)
     {
-        List<AircraftInfo> result = new ArrayList<>();
+        List<SessionInfo> result = new ArrayList<>();
 
-        result.add(getAircraft("PH-BLA", authHdr));
+        result.add(getSession("Sundowners", authHdr));
 
         return result;
     }
 
     @GET
-    @Path("{callsign}")
+    @Path("{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo getAircraft(@PathParam("callsign")        String callsign,
-                                    @HeaderParam("authorization") String authHdr)
+    public SessionInfo getSession(@PathParam("name")            String name,
+                                  @HeaderParam("authorization") String authHdr)
     {
         Token token = verifier.decodeToken(authHdr);
 
-        AircraftInfo result = new AircraftInfo(callsign);
+        SessionInfo result = new SessionInfo(name, "FSGG Sundowners");
 
         rules.cleanRecord(result, token);
 
@@ -78,19 +76,19 @@ public class AircraftAPI
     }
 
     @PUT
-    @Path("{callsign}")
+    @Path("{name}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AircraftInfo updateAircraft(@PathParam("callsign")        String callsign,
-                                                                     JsonObject aircraft,
-                                       @HeaderParam("authorization") String authHdr)
+    public SessionInfo updateSession(@PathParam("name")            String name,
+                                                                   JsonObject session,
+                                     @HeaderParam("authorization") String authHdr)
     {
         Token token = verifier.decodeToken(authHdr);
 
-        AircraftInfo result = getAircraft(callsign, authHdr);
+        SessionInfo result = getSession(name, authHdr);
 
-        rules.checkUpdate(result, aircraft, token);
-        result.updateFromJsonObject(aircraft);
+        rules.checkUpdate(result, session, token);
+        result.updateFromJsonObject(session);
 
         return result;
     }
@@ -98,13 +96,14 @@ public class AircraftAPI
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createAircraft(                              JsonObject aircraft,
-                                 @HeaderParam("authorization") String authHdr)
+    public String createSession(                              JsonObject session,
+                                @HeaderParam("authorization") String authHdr)
     {
         Token token = verifier.decodeToken(authHdr);
 
-        rules.checkCreate(aircraft, token);
+        rules.checkCreate(session, token);
 
-        return aircraft.getString(JsonFields.FIELD_ATC_ID);
+        return session.getString(JsonFields.FIELD_NAME);
     }
+    
 }
