@@ -18,7 +18,6 @@ package nl.rakis.fs.auth;
 
 import java.io.Console;
 import java.io.File;
-import java.util.Set;
 
 public class AuthUtil
 {
@@ -41,6 +40,12 @@ public class AuthUtil
         System.err.println();
         System.err.println("  -d|--dir     Set the directory for the data files (default \".\"");
         System.err.println("Usage:");
+    }
+
+    private static void checkParmCount(int i, int len, int npar) throws Exception {
+        if ((len - i) < (npar + 1)) {
+            throw new Exception("Bad number of parameters");
+        }
     }
 
     private static void addUser(String userName, String realName, String defSession) {
@@ -216,134 +221,87 @@ public class AuthUtil
     }
 
     public static void main(String[] args) {
-        int i=0;
-        if (i < args.length) {
-            if (args [i].equals("-d") || args [i].equals("--dir")) {
-                i += 1;
-                if (i < args.length) {
-                    dirPath = new File(args [i++]);
+        try {
+            int i=0;
+            if (i < args.length) {
+                if (args [i].equals("-d") || args [i].equals("--dir")) {
+                    i += 1;
+                    if (i < args.length) {
+                        dirPath = new File(args [i++]);
+                    }
+                    else {
+                        usage();
+                        System.exit(-1);
+                    }
                 }
-                else {
-                    usage();
-                    System.exit(-1);
+            }
+            if (i < args.length) {
+                switch (args[i]) {
+
+                    case "adduser":
+                        checkParmCount(i, args.length, 3);
+                        addUser(args[i + 1], args[i + 2], args[i + 3]);
+                        break;
+
+                    case "rmuser":
+                        checkParmCount(i, args.length, 1);
+                        rmUser(args[i + 1]);
+                        break;
+
+                    case "passwd":
+                        checkParmCount(i, args.length, 1);
+                        passwd(args[i + 1]);
+                        break;
+
+                    case "basicauth":
+                        checkParmCount(i, args.length, 1);
+                        basicAuth(args[i + 1]);
+                        break;
+
+                    case "unbasicauth":
+                        checkParmCount(i, args.length, 1);
+                        unBasicAuth(args[i + 1]);
+                        break;
+
+                    case "addgroup":
+                        checkParmCount(i, args.length, 1);
+                        addGroup(args[i + 1]);
+                        break;
+
+                    case "rmgroup":
+                        checkParmCount(i, args.length, 1);
+                        rmGroup(args[i + 1]);
+                        break;
+
+                    case "addgroupuser":
+                        checkParmCount(i, args.length, 2);
+                        addGroupUser(args[i + 1], args[i + 2]);
+                        break;
+
+                    case "rmgroupuser":
+                        checkParmCount(i, args.length, 2);
+                        rmGroupUser(args[i + 1], args[i + 2]);
+                        break;
+
+                    case "showuser":
+                        checkParmCount(i, args.length, 1);
+                        showUser(args[i + 1]);
+                        break;
+
+                    case "showgroup":
+                        checkParmCount(i, args.length, 1);
+                        showGroup(args[i + 1]);
+                        break;
+
+                    default:
+                        throw new Exception("Unknown command \"" + args[i] + "\"");
                 }
             }
         }
-        if (i < args.length) {
-            if (args [i].equals("adduser")) {
-                i += 1;
-                if ((i+3) == args.length) {
-                    addUser(args [i], args [i+1], args [i+2]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("rmuser")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    rmUser(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("passwd")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    passwd(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("basicauth")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    basicAuth(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("unbasicauth")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    unBasicAuth(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("addgroup")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    addGroup(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("rmgroup")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    rmGroup(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("addgroupuser")) {
-                i += 1;
-                if ((i+2) == args.length) {
-                    addGroupUser(args [i], args [i+1]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("rmgroupuser")) {
-                i += 1;
-                if ((i+2) == args.length) {
-                    rmGroupUser(args [i], args [i+1]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("showuser")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    showUser(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else if (args [i].equals("showgroup")) {
-                i += 1;
-                if ((i+1) == args.length) {
-                    showGroup(args [i]);
-                }
-                else {
-                    usage();
-                    System.exit(-1);
-                }
-            }
-            else {
-                usage();
-                System.exit(-1);
-            }
+        catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            usage();
+            System.exit(-1);
         }
     }
 }
