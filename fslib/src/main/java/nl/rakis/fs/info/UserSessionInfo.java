@@ -156,21 +156,6 @@ public class UserSessionInfo
         return result;
     }
 
-    public void parse(String json) {
-        if (json != null) {
-            try (StringReader sr = new StringReader(json);
-                 JsonReader jr = Json.createReader(sr)) {
-                final JsonObject obj = jr.readObject();
-
-                setSessionId(UUID.fromString(obj.getString(JsonFields.FIELD_SESSIONID)));
-                setUsername(obj.getString(JsonFields.FIELD_USERNAME));
-                setSession(obj.getString(JsonFields.FIELD_SESSION));
-                setCallsign(obj.getString(JsonFields.FIELD_CALLSIGN));
-                setLastAccess(Long.parseLong(obj.getString(JsonFields.FIELD_LAST_ACCESS)));
-            }
-        }
-    }
-
     public String getUsername() {
         return username;
     }

@@ -169,27 +169,6 @@ public class ControlsInfo
         return result;
     }
 
-    public void parse(String json) {
-        if (json != null) {
-            try (StringReader sr = new StringReader(json);
-                 JsonReader jr = Json.createReader(sr)) {
-                final JsonObject obj = jr.readObject();
-
-                setRdr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_POS).doubleValue());
-                setRdrtr(obj.getJsonNumber(JsonFields.FIELD_RUDDER_TRIM_POS).doubleValue());
-                setEle(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_POS).doubleValue());
-                setEletr(obj.getJsonNumber(JsonFields.FIELD_ELEVATOR_TRIM_POS).doubleValue());
-                setAil(obj.getJsonNumber(JsonFields.FIELD_AILERON_POS).doubleValue());
-                setAiltr(obj.getJsonNumber(JsonFields.FIELD_AILERON_TRIM_POS).doubleValue());
-                setSpl(obj.getJsonNumber(JsonFields.FIELD_SPOILERS_POS).doubleValue());
-                setFlp(obj.getJsonNumber(JsonFields.FIELD_FLAPS_POS).doubleValue());
-                setGrs(obj.getInt(JsonFields.FIELD_GEARS_DOWN));
-                setBrk(obj.getJsonNumber(JsonFields.FIELD_PARKING_BRAKE_POS).doubleValue());
-                setDr1(obj.getJsonNumber(JsonFields.FIELD_DOOR_POS).doubleValue());
-            }
-        }
-    }
-
     public double getRdr() {
         return rdr;
     }

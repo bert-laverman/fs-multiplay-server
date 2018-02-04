@@ -119,18 +119,6 @@ public class EngineInfo
         return result;
     }
 
-    public void parse(String json) {
-        if (json != null) {
-            try (StringReader sr = new StringReader(json);
-                 JsonReader jr = Json.createReader(sr)) {
-                final JsonObject obj = jr.readObject();
-
-                setEng(copyArray(obj.getJsonArray(JsonFields.FIELD_ENGINE_ON), 4));
-                setThrt(copyArray(obj.getJsonArray(JsonFields.FIELD_THROTTLE), 4));
-            }
-        }
-    }
-
     public int[] getEng() {
         return eng;
     }

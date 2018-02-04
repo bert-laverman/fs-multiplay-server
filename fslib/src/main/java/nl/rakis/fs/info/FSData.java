@@ -17,6 +17,7 @@
 package nl.rakis.fs.info;
 
 import javax.json.*;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -139,7 +140,21 @@ public abstract class FSData {
      * Parse a serialized JSON object and initialize the object from it.
      * @param jsonString the serialized JSON object
      */
-    public abstract void parse(String jsonString);
+    public void parse(String jsonString) {
+        log.finest("parse(): \"" + jsonString + "\"");
+
+        if (jsonString != null) {
+            try (StringReader sr = new StringReader(jsonString);
+                 JsonReader jr = Json.createReader(sr)) {
+                final JsonObject obj = jr.readObject();
+                log.finest("parse(): JsonReader.readObject() returned \"" + obj.toString() + "\"");
+
+                updateFromJsonObject(obj);
+            }
+        }
+        log.finest("parse(): result is \"" + toString() + "\"");
+
+    }
 
     public String getHref() {
         return href;

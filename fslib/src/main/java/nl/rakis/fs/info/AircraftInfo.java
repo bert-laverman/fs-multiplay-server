@@ -168,33 +168,6 @@ public class AircraftInfo
         return result;
     }
 
-    public void parse(String json) {
-        if (json != null) {
-            try (StringReader sr = new StringReader(json);
-                 JsonReader jr = Json.createReader(sr)) {
-                final JsonObject obj = jr.readObject();
-
-                setAtcId(obj.getString(JsonFields.FIELD_ATC_ID));
-                setTitle(obj.getString(JsonFields.FIELD_TITLE));
-                if (!obj.isNull(JsonFields.FIELD_USERNAME)) {
-                    setUsername(obj.getString(JsonFields.FIELD_USERNAME));
-                }
-                if (!obj.isNull(JsonFields.FIELD_ATC_TYPE)) {
-                    setAtcType(obj.getString(JsonFields.FIELD_ATC_TYPE));
-                }
-                if (!obj.isNull(JsonFields.FIELD_ATC_MODEL)) {
-                    setAtcModel(obj.getString(JsonFields.FIELD_ATC_MODEL));
-                }
-                if (!obj.isNull(JsonFields.FIELD_ATC_AIRLINE)) {
-                    setAtcAirline(obj.getString(JsonFields.FIELD_ATC_AIRLINE));
-                }
-                if (!obj.isNull(JsonFields.FIELD_ATC_FLNUM)) {
-                    setAtcFlightNumber(obj.getString(JsonFields.FIELD_ATC_FLNUM));
-                }
-            }
-        }
-    }
-
     public String getUsername() {
         return username;
     }
